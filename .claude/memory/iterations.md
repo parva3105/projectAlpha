@@ -205,6 +205,12 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-19 — fix/pre-m3-proxy-loop
+- Added /signup/complete loop guard to proxy.ts to prevent redirect loop on stale JWT
+- When authenticated user has no role claim in JWT and is already on /signup/complete, proxy now returns immediately instead of redirecting again
+
+---
+
 ## 2026-03-19 — M2 orchestration complete. All 4 PRs merged.
 **Type**: Orchestration
 **Milestone**: M2 — Agency Deal Pipeline

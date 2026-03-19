@@ -58,6 +58,9 @@ export const proxy = clerkMiddleware(async (auth, req) => {
 
   // Authenticated but no role yet (still completing sign-up)
   if (!role) {
+    // Guard: if already on /signup/complete, let the page handle it.
+    // Redirecting again causes an infinite loop while the JWT is stale.
+    if (req.nextUrl.pathname === "/signup/complete") return;
     return NextResponse.redirect(new URL("/signup/complete", req.url));
   }
 
