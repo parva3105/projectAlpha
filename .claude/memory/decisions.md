@@ -136,6 +136,12 @@ _Append only. Never delete entries._
 
 ---
 
+## 2026-03-19 — Proxy loop guard for stale JWT
+**Decision**: Redirect to /signup/complete is skipped when the current request path is already /signup/complete.
+**Reason**: JWT staleness (role claim missing from token) is handled client-side by session.reload() in the /signup/complete page component. Redirecting again from proxy would cause a visible loop. Keeps proxy.ts free of external API calls.
+
+---
+
 ## 2026-03-18 — Out of scope for MVP (locked decisions)
 The following were evaluated and explicitly excluded from MVP. Do not reopen without a new decision entry:
 - Smart creator matching / recommendation engine

@@ -33,6 +33,10 @@ Without this, `proxy.ts` cannot read `sessionClaims.metadata.role` → all authe
 
 ---
 
+## No new requests from fix/pre-m3-proxy-loop iteration.
+
+---
+
 ## Open — M8 prerequisite
 
 ### REQ-001: Install Neon GitHub integration
