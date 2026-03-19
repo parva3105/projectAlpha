@@ -81,3 +81,12 @@ They receive a one-click verification link.
 ### REQ-F06: Native mobile app (React Native / Expo)
 **Type**: Feature — Iteration 3
 **What**: API layer (/api/v1/) already designed to support this. Clerk has React Native SDK.
+---
+
+## Open — M2 (discovered during M2 Frontend C)
+
+### REQ-M2-003: Brands list page lacks open deal count and total deal value
+**Type**: Enhancement
+**Priority**: P3
+**What**: `GET /api/v1/brands` returns brands without deal aggregates. The BrandsTable renders openDealCount and totalDealValue as 0 for all rows. To show real aggregates, the API would need to include deal counts/sums per brand (or the frontend would need N+1 fetches per brand). The brand detail page (via GET /api/v1/brands/:id) includes full deals[].
+**Status**: Acceptable for MVP. Backend agent to add aggregate fields to GET /api/v1/brands in a future iteration.
