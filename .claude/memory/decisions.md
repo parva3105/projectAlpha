@@ -87,6 +87,19 @@ _Append only. Never delete entries._
 
 ---
 
+## 2026-03-19 — Vercel CLI as deployment strategy for M1
+**Decision**: Use `vercel deploy --prod` via CLI for immediate production deploys when env vars change; rely on `prod.yml` CI/CD for all subsequent milestone merges.
+**Reason**: `NEXT_PUBLIC_*` vars are baked at build time. When env vars are added to Vercel after the last deploy, a fresh build is required to bake them in. `vercel deploy --prod` is the fastest path for a one-off refresh without waiting for a CI/CD merge.
+**Going forward**: Once all env vars are stable, `prod.yml` (triggered on merge to master) handles all production deploys — no manual `vercel deploy` needed.
+
+---
+
+## 2026-03-19 — e2e test scope (M1): page availability + redirect, not Clerk automation
+**Decision**: M1 e2e tests cover page availability (HTTP status not 500) and unauthenticated redirect behaviour only. Full Clerk sign-up automation (email verification codes) is deferred to M8 with Clerk test mode.
+**Reason**: Email verification codes from Clerk cannot be intercepted in a standard Playwright test. Testing the rendered `<SignUp>` widget in detail requires Clerk's test mode (E2E testing mode), which is scoped to M8 when the full smoke test suite is built.
+
+---
+
 ## 2026-03-18 — Out of scope for MVP (locked decisions)
 The following were evaluated and explicitly excluded from MVP. Do not reopen without a new decision entry:
 - Smart creator matching / recommendation engine

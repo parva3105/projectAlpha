@@ -3,13 +3,26 @@ _Backlog of features, fixes, and open questions. Append new items. Mark resolved
 
 ---
 
-## Open — Pre-M1
+## Open — M2
+
+### REQ-003: Set Clerk session token claim before first sign-up
+**Type**: Setup
+**Priority**: P0 — blocks role routing if missing
+**What**: In Clerk dashboard → Configure → Sessions → Customize session token → add:
+  `{ "metadata": "{{user.public_metadata}}" }`
+Without this, `proxy.ts` cannot read `sessionClaims.metadata.role` → all authenticated users land in a redirect loop to /signup/complete.
+**Status**: Must be done before testing M2 (first real sign-up with role assignment).
+
+---
+
+## Open — M8 prerequisite
 
 ### REQ-001: Install Neon GitHub integration
 **Type**: Setup
 **Priority**: P1 — needed for M8 CI
 **What**: Install Neon GitHub app to enable per-PR database branches. Required for isolated CI testing in M8.
 **How**: Neon dashboard → Integrations → GitHub → Install → select brand-deal-manager repo.
+**Note**: Not blocking M2–M7. Do before starting M8.
 
 ---
 

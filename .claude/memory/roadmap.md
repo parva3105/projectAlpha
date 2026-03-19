@@ -1,5 +1,5 @@
 # Product roadmap — Brand Deal Manager
-_Last updated: 2026-03-18_
+_Last updated: 2026-03-19_
 
 ---
 
@@ -7,7 +7,7 @@ _Last updated: 2026-03-18_
 
 | # | Name | Est. duration | Status |
 |---|---|---|---|
-| M1 | Foundation | 2–3 days | 🔲 Not started |
+| M1 | Foundation | 2–3 days | ✅ Complete |
 | M2 | Agency Deal Pipeline | 5–7 days | 🔲 Not started |
 | M3 | Creator Portal + Content Approval | 3–4 days | 🔲 Not started |
 | M4 | File Uploads | 3–4 days | 🔲 Not started |
@@ -40,21 +40,22 @@ M8 (Polish)        ← depends on all milestones complete
 
 ---
 
-## M1 — Foundation
+## M1 — Foundation ✅ COMPLETE (2026-03-19)
 **Goal**: Project runs locally. Three roles can log in and land on the right page.
 **Deliverable**: Three users (one per role) can sign up, log in, and see a blank dashboard appropriate to their role.
 
-- [ ] Scaffold Next.js 16 project (`npx create-next-app@latest`)
-- [ ] Install and configure shadcn/ui + Tailwind + Geist fonts
-- [ ] Set up Neon database + Prisma schema (full schema from tech stack doc)
-- [ ] Run initial migration, confirm all tables exist
-- [ ] Add pg_trgm extension and trigram indexes (Creator name, handle, nicheTags)
-- [ ] Install and configure Clerk (3 roles via publicMetadata)
-- [ ] `proxy.ts` — role-based redirects (agency → `/dashboard`, creator → `/creator/deals`, brand → `/briefs/new`)
-- [ ] Skeleton layout per role (sidebar nav, header, empty content area)
-- [ ] `/signup/agency`, `/signup/creator`, `/signup/brand` — each sets correct role in metadata
-- [ ] `/login` page
-- [ ] Deploy to Vercel, confirm auth flow works end-to-end
+- [x] Scaffold Next.js 16 project (`npx create-next-app@latest`)
+- [x] Install and configure shadcn/ui + Tailwind + Geist fonts
+- [x] Set up Neon database + Prisma schema (full schema from tech stack doc)
+- [x] Run initial migration, confirm all tables exist
+- [x] Add pg_trgm extension and trigram indexes (Creator name, handle, nicheTags)
+- [x] Install and configure Clerk (3 roles via publicMetadata)
+- [x] `proxy.ts` — role-based redirects (agency → `/dashboard`, creator → `/creator/deals`, brand → `/briefs/new`)
+- [x] Skeleton layout per role (sidebar nav, header, empty content area)
+- [x] `/signup/agency`, `/signup/creator`, `/signup/brand` — each sets correct role in metadata
+- [x] `/login` page
+- [x] Deploy to Vercel, confirm auth flow works end-to-end
+- [x] Playwright e2e tests — 15/15 green against https://project-alpha-rho.vercel.app
 
 ---
 

@@ -3,6 +3,28 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-19 — Pre-PR cleanup (user commits, pre-M1 Task 3)
+**Type**: Cleanup
+**Commits**: `5973fa9` (Removed), `e97277c` (removed)
+**What changed**:
+- `.env.local` was accidentally committed to the repo, then removed in two sequential commits
+- `.claude/launch.json` added (local VS Code/IDE launch config — gitignored going forward)
+- `dev_output.txt` added (local dev scratch file — gitignored)
+- These commits predate PR #1 merge; they are user cleanup actions, not milestone work
+
+---
+
+## 2026-03-19 — chore: ignore .claude/ in ESLint (part of PR #2)
+**Type**: Chore
+**Commit**: `90c1b8a`
+**Milestone**: M1 — Foundation
+**What changed**:
+- Added `.claude/**` to `globalIgnores` in `eslint.config.mjs`
+- Claude Code skill scripts under `.claude/skills/` use CommonJS `require()` which correctly triggered `@typescript-eslint/no-require-imports`; they are tooling, not product code
+- Without this fix, `npm run lint` failed in the pre-PR checklist
+
+---
+
 ## 2026-03-18 — refactor/lift-to-root
 **Type**: Refactor / DevOps
 **Branch**: refactor/lift-to-root
@@ -20,6 +42,32 @@ _Append only. One entry per session or PR. Never delete._
 - lib/auth.ts stub created (implementation deferred to M2)
 - CLAUDE.md paths already correct at root (no brand-deal-manager/ prefixes present)
 **REQUIRED MANUAL ACTION**: Vercel Dashboard -> Project -> Settings -> General -> Root Directory -> change from 'brand-deal-manager' to blank (repo root). Without this step, Vercel will try to build from the wrong directory and the deploy will fail.
+
+---
+
+## 2026-03-19 — M1 Task 4: Playwright e2e tests + CI fix
+**Type**: Testing / DevOps
+**Milestone**: M1 — Foundation
+**Branch**: feat/m1-e2e-tests
+**What changed**:
+- Installed `@playwright/test@^1.58.2`; added `test:e2e` + `test:e2e:report` scripts to `package.json`
+- Created `playwright.config.ts` at repo root — `baseURL` overridable via `PLAYWRIGHT_BASE_URL`; chromium only; retries: 1
+- Created 5 spec files in `e2e/`:
+  - `auth.unauthenticated.spec.ts` — protected routes redirect to /login (requires CLERK_SECRET_KEY in Vercel)
+  - `public.routes.spec.ts` — /login, /discover, /agencies, / all accessible without auth ✅
+  - `auth.signup.agency.spec.ts` — /signup/agency renders + main element visible ✅
+  - `auth.signup.creator.spec.ts` — /signup/creator renders + main element visible ✅
+  - `auth.signup.brand.spec.ts` — /signup/brand renders + main element visible ✅
+- Fixed `ci.yml` + `prod.yml` to trigger on both `main` and `master` (repo initialized with master, not main)
+- Installed Vercel CLI (`npm i -g vercel`), ran `vercel link` to connect to parva3105s-projects/project-alpha
+- All 21 env vars confirmed present in Vercel production via `vercel env ls production` (added 8h prior)
+- Root cause of redirect failures: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is baked at build time — production deployment predated the env vars being added → Clerk client couldn't initialize → middleware passed all requests through
+- Fix: `vercel deploy --prod` triggered fresh production build with all env vars baked in → aliased to https://project-alpha-rho.vercel.app
+- **Final test results: 15/15 pass ✅**
+- playwright.config.ts updated: defaulted baseURL to production URL (https://project-alpha-rho.vercel.app/)
+- .vercel/ added to .gitignore by vercel link
+**PR**: https://github.com/parva3105/projectAlpha/pull/2
+**Status**: M1 COMPLETE ✅
 
 ---
 

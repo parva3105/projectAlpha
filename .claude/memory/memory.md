@@ -2,15 +2,29 @@
 _Last updated: 2026-03-19_
 
 ## Current state
-- Status: Pre-development. All external services provisioned. Ready to begin M1.
-- Active milestone: M1 — Foundation (not yet started)
-- Next.js app at repo root (lifted from brand-deal-manager/ subdirectory via refactor/lift-to-root PR)
-- Vercel project: https://project-alpha-rho.vercel.app
-- NOTE: Vercel Root Directory must be set to blank (repo root) in dashboard — was previously 'brand-deal-manager'
-- GitHub repo: created
-- Neon database: provisioned
-- Clerk app: created
-- GitHub repo: created
+- Status: **M1 COMPLETE ✅** — Ready to begin M2
+- Active milestone: M2 — Agency Deal Pipeline
+- Production URL: https://project-alpha-rho.vercel.app (deployed, all env vars baked in)
+- Vercel Root Directory: blank (repo root) — confirmed correct
+- Vercel CLI installed (`vercel` v50.33.1), project linked to parva3105s-projects/project-alpha
+- GitHub repo: https://github.com/parva3105/projectAlpha
+- Branch `feat/m1-e2e-tests` open — contains Playwright e2e suite (15/15 pass), CI fixes
+- All env vars confirmed in Vercel production (21 vars)
+
+## M1 deliverables — all complete ✅
+- Next.js 16 + shadcn/ui + Geist fonts — scaffolded
+- Neon + Prisma schema — migrated (6 models, 6 enums, trigram indexes)
+- Clerk auth — 3 roles via publicMetadata, proxy.ts routing
+- Skeleton layouts — agency, creator, brand_manager role groups
+- Signup flows — /signup/agency, /signup/creator, /signup/brand with role assignment + session.reload()
+- /login page — Clerk SignIn
+- Playwright e2e tests — 15/15 green against production
+- CI/CD — ci.yml (PR gate) + prod.yml (push to master → deploy) both trigger on main + master
+
+## ⚠️ Before first real sign-up (M2 prerequisite)
+Set Clerk session token claim in Clerk dashboard:
+Configure → Sessions → Customize session token → `{ "metadata": "{{user.public_metadata}}" }`
+Without this, all authenticated users loop to /signup/complete forever (see REQ-003).
 
 ## Stack confirmed
 - Next.js 16 App Router + TypeScript strict
