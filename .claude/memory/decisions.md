@@ -100,6 +100,42 @@ _Append only. Never delete entries._
 
 ---
 
+## 2026-03-19 — Auth guard pattern: result object, not exceptions
+**Decision**: `requireAgencyAuth()` returns `{ ok: boolean, userId?, error? }` rather than throwing an exception or returning a NextResponse directly.
+**Reason**: Route handlers call this at the top and can branch cleanly. Throwing from a helper makes error handling less explicit. Returning a NextResponse from the helper would couple the helper to HTTP, making it untestable.
+
+---
+
+## 2026-03-19 — Deal model has no platform field; platform lives on Creator and Brief
+**Decision**: `platform` is not stored on Deal. It is on `Creator.platforms[]` (array) and `Brief.platform` (string). Removed `platform` from `CreateDealSchema` and `UpdateDealSchema` after inspecting the Prisma schema.
+**Reason**: Schema is the source of truth. Adding a field to the schema that doesn't exist in the DB would cause runtime Prisma errors.
+
+---
+
+## 2026-03-19 — Brand model has no notes field
+**Decision**: `notes` omitted from `CreateBrandSchema`. The Brand model only has `id`, `name`, `website`, `logoUrl`.
+**Reason**: Schema is the source of truth.
+
+---
+
+## 2026-03-19 — Creator.email field does not exist in MVP schema
+**Decision**: `AddCreatorToRosterSchema` accepts `email` for validation/future-proofing, but it is not persisted. Creator model has no email field. Logged as REQ-M2-001.
+**Reason**: Schema is the source of truth. Adding an email field to the model is a database agent concern — deferred to a future migration.
+
+---
+
+## 2026-03-19 — Roster creator placeholder clerkId uses crypto.randomUUID()
+**Decision**: Manually-added creators (no Clerk account) get `clerkId = "roster_" + crypto.randomUUID()`. No external cuid library is needed.
+**Reason**: `crypto.randomUUID()` is available in Node 16+ and all Next.js runtimes (edge and Node). Avoids adding a dependency for a simple ID generation case.
+
+---
+
+## 2026-03-19 — Vitest version pinned to ^1.6.1 (not v4)
+**Decision**: Use `vitest@^1.6.1` instead of the latest v4.x.
+**Reason**: Vitest v4 uses rolldown which requires `node:util.styleText` — only available in Node 20.16+. The dev machine runs Node 20.11.1. Vitest v1 is stable and fully compatible.
+
+---
+
 ## 2026-03-18 — Out of scope for MVP (locked decisions)
 The following were evaluated and explicitly excluded from MVP. Do not reopen without a new decision entry:
 - Smart creator matching / recommendation engine

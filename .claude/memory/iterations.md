@@ -3,6 +3,41 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-19 — M2: Deal Pipeline API Routes
+**Type**: Feature
+**Milestone**: M2 — Agency Deal Pipeline
+**Branch**: feat/m2-backend-api
+**What changed**:
+- Installed `zod@^4.3.6` (validation) and `vitest@^1.6.1` (compatible with Node 20.11.1)
+- Added `test` and `test:watch` scripts to `package.json`
+- Created `vitest.config.ts` with node environment and `@` alias
+- Implemented `lib/auth.ts` — `requireAgencyAuth()` reads Clerk session claims (`metadata.role`) and returns typed result object; no exceptions thrown
+- Created `lib/validations/deal.ts` — `CreateDealSchema`, `UpdateDealSchema`, `AdvanceStageSchema` with all Prisma enum mirrors; `platform` field omitted (not on Deal model)
+- Created `lib/validations/brand.ts` — `CreateBrandSchema`, `UpdateBrandSchema`; `notes` field omitted (not on Brand model)
+- Created `lib/validations/roster.ts` — `AddCreatorToRosterSchema` with handle regex validation
+- Created `lib/stage-transitions.ts` — `STAGE_ORDER`, `SYSTEM_CONTROLLED_STAGES`, `isValidAdvance()`, `getPreviousStage()`
+- Created `lib/overdue.ts` — `isOverdue()` — false for null deadline, LIVE stage, or CLOSED stage
+- Created `lib/api-response.ts` — shared `ok()`, `err()`, `unauthorized()`, `forbidden()`, `notFound()`, `unprocessable()`, `badRequest()` helpers
+- Created route handlers:
+  - `app/api/v1/deals/route.ts` — GET (with stage/creatorId/brandId/overdueOnly filters) + POST
+  - `app/api/v1/deals/[id]/route.ts` — GET + PATCH (recalculates creatorPayout) + DELETE
+  - `app/api/v1/deals/[id]/stage/route.ts` — POST (advance stage, rejects system stages with 422)
+  - `app/api/v1/deals/[id]/reopen/route.ts` — POST (one step back, rejects BRIEF_RECEIVED with 422)
+  - `app/api/v1/brands/route.ts` — GET + POST
+  - `app/api/v1/brands/[id]/route.ts` — GET with deals[]
+  - `app/api/v1/roster/route.ts` — GET + POST (placeholder clerkId via crypto.randomUUID())
+- Created 4 test files in `lib/__tests__/`:
+  - `stage-transitions.test.ts` — 9 tests (STAGE_ORDER, isValidAdvance, getPreviousStage)
+  - `overdue.test.ts` — 5 tests (all edge cases)
+  - `deal-validation.test.ts` — 15 tests (CreateDealSchema, UpdateDealSchema, AdvanceStageSchema)
+  - `stage-advance-business-logic.test.ts` — 10 tests (combined logic, reopen)
+- All 39 tests pass: `npx vitest run` ✅
+- `npm run typecheck` → zero errors ✅
+- `npm run lint` → 0 errors, 2 warnings (expected underscore-prefix params) ✅
+- Documented all 10 new endpoints in `docs/API.md`
+
+---
+
 ## 2026-03-19 — Pre-PR cleanup (user commits, pre-M1 Task 3)
 **Type**: Cleanup
 **Commits**: `5973fa9` (Removed), `e97277c` (removed)
