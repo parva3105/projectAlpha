@@ -44,6 +44,7 @@ _Append only. One entry per session or PR. Never delete._
 - **Final test results: 15/15 pass ✅**
 - playwright.config.ts updated: defaulted baseURL to production URL (https://project-alpha-rho.vercel.app/)
 - .vercel/ added to .gitignore by vercel link
+**PR**: https://github.com/parva3105/projectAlpha/pull/2
 **Status**: M1 COMPLETE ✅
 
 ---
