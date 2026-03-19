@@ -3,6 +3,18 @@ _Backlog of features, fixes, and open questions. Append new items. Mark resolved
 
 ---
 
+## Open — M2
+
+### REQ-003: Set Clerk session token claim before first sign-up
+**Type**: Setup
+**Priority**: P0 — blocks role routing if missing
+**What**: In Clerk dashboard → Configure → Sessions → Customize session token → add:
+  `{ "metadata": "{{user.public_metadata}}" }`
+Without this, `proxy.ts` cannot read `sessionClaims.metadata.role` → all authenticated users land in a redirect loop to /signup/complete.
+**Status**: Must be done before testing M2 (first real sign-up with role assignment).
+
+---
+
 ## Open — Pre-M1
 
 ### REQ-001: Install Neon GitHub integration
