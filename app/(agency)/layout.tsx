@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
@@ -46,7 +47,9 @@ export default function AgencyLayout({
             Agency
           </span>
         </header>
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <TooltipProvider>
+          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        </TooltipProvider>
       </div>
     </div>
   );
