@@ -12,8 +12,9 @@ const isPublicRoute = createRouteMatcher([
   "/agencies(.*)",
   "/login(.*)",
   "/signup(.*)",
-  // Role-setup callback — must be accessible right after sign-up
+  // Role-setup callbacks — must be accessible right after sign-up
   "/api/v1/auth/complete(.*)",
+  "/api/v1/auth/set-role(.*)",
 ]);
 
 // Brand manager only — check BEFORE isAgencyRoute so /briefs/new isn't caught by the agency matcher
