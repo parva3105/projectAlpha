@@ -3,6 +3,28 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-19 — Pre-PR cleanup (user commits, pre-M1 Task 3)
+**Type**: Cleanup
+**Commits**: `5973fa9` (Removed), `e97277c` (removed)
+**What changed**:
+- `.env.local` was accidentally committed to the repo, then removed in two sequential commits
+- `.claude/launch.json` added (local VS Code/IDE launch config — gitignored going forward)
+- `dev_output.txt` added (local dev scratch file — gitignored)
+- These commits predate PR #1 merge; they are user cleanup actions, not milestone work
+
+---
+
+## 2026-03-19 — chore: ignore .claude/ in ESLint (part of PR #2)
+**Type**: Chore
+**Commit**: `90c1b8a`
+**Milestone**: M1 — Foundation
+**What changed**:
+- Added `.claude/**` to `globalIgnores` in `eslint.config.mjs`
+- Claude Code skill scripts under `.claude/skills/` use CommonJS `require()` which correctly triggered `@typescript-eslint/no-require-imports`; they are tooling, not product code
+- Without this fix, `npm run lint` failed in the pre-PR checklist
+
+---
+
 ## 2026-03-18 — refactor/lift-to-root
 **Type**: Refactor / DevOps
 **Branch**: refactor/lift-to-root

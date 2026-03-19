@@ -15,13 +15,14 @@ Without this, `proxy.ts` cannot read `sessionClaims.metadata.role` → all authe
 
 ---
 
-## Open — Pre-M1
+## Open — M8 prerequisite
 
 ### REQ-001: Install Neon GitHub integration
 **Type**: Setup
 **Priority**: P1 — needed for M8 CI
 **What**: Install Neon GitHub app to enable per-PR database branches. Required for isolated CI testing in M8.
 **How**: Neon dashboard → Integrations → GitHub → Install → select brand-deal-manager repo.
+**Note**: Not blocking M2–M7. Do before starting M8.
 
 ---
 
