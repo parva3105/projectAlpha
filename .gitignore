@@ -47,3 +47,15 @@ test-results/
 # ─── Misc ───────────────────────────────────────────────────
 *.tsbuildinfo
 next-env.d.ts
+
+# ─── Yarn (from brand-deal-manager/.gitignore) ───────────────
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ─── Certificates ────────────────────────────────────────────
+*.pem

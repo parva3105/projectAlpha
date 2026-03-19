@@ -1,10 +1,12 @@
 # Project memory — Brand Deal Manager
-_Last updated: 2026-03-18_
+_Last updated: 2026-03-19_
 
 ## Current state
 - Status: Pre-development. All external services provisioned. Ready to begin M1.
 - Active milestone: M1 — Foundation (not yet started)
+- Next.js app at repo root (lifted from brand-deal-manager/ subdirectory via refactor/lift-to-root PR)
 - Vercel project: https://project-alpha-rho.vercel.app
+- NOTE: Vercel Root Directory must be set to blank (repo root) in dashboard — was previously 'brand-deal-manager'
 - GitHub repo: created
 - Neon database: provisioned
 - Clerk app: created
