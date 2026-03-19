@@ -20,14 +20,18 @@ _Last updated: 2026-03-18_
 ---
 
 ## Dependency graph
+
+```
 M1 (Foundation)
-└── M2 (Deal Pipeline)
-├── M3 (Creator Portal)        ← depends on M2
-│     └── M4 (File Uploads)   ← depends on M3
-└── M5 (Discovery Layer)      ← depends on M2
-└── M6 (Brand Manager)  ← depends on M5
+  └── M2 (Deal Pipeline)
+        ├── M3 (Creator Portal)        ← depends on M2
+        │     └── M4 (File Uploads)   ← depends on M3
+        └── M5 (Discovery Layer)      ← depends on M2
+              └── M6 (Brand Manager)  ← depends on M5
+
 M7 (Notifications) ← depends on M3 + M5 + M6 (all event triggers must exist)
 M8 (Polish)        ← depends on all milestones complete
+```
 
 ---
 
@@ -90,7 +94,7 @@ M8 (Polish)        ← depends on all milestones complete
 **Deliverable**: Contracts and content stored as real files, not URLs.
 
 - [ ] Vercel Blob — contract upload in Section B (max 25MB)
-- [ ] Cloudflare R2 bucket + credentials configured
+- [ ] Cloudflare R2 bucket (project-alpha) + credentials configured
 - [ ] `/api/v1/uploads/content` — returns signed R2 upload URL
 - [ ] Client-side resumable upload to R2 via TUS (`tus-js-client`)
 - [ ] Upload progress indicator on content submission form
@@ -140,8 +144,13 @@ M8 (Polish)        ← depends on all milestones complete
 **Goal**: All 11 email events fire reliably with retry. Deadline reminders run automatically.
 **Deliverable**: Every key event sends an email. No email lost on transient failure.
 
-- [ ] Trigger.dev project set up + local runner
-- [ ] Resend account + verified sending domain
+> **Domain note**: MVP uses Resend shared sender (onboarding@resend.dev).
+> Test recipients must be manually added as verified contacts in Resend dashboard
+> before they can receive emails. Custom domain wired in post-MVP (see REQ-002).
+
+- [ ] Trigger.dev local runner confirmed working (`npx trigger.dev@latest dev`)
+- [ ] Resend API key confirmed, EMAIL_FROM=onboarding@resend.dev
+- [ ] Add all test user emails as verified contacts in Resend dashboard before testing
 - [ ] React Email base template (logo, footer, brand styling)
 - [ ] 11 email templates:
   - [ ] DEAL_ASSIGNED → creator
@@ -185,6 +194,7 @@ M8 (Polish)        ← depends on all milestones complete
 - In-app notification centre
 - Basic reporting: deals closed, total commission, creator performance
 - Agency public profile page
+- Custom email domain (REQ-002) — verify domain in Resend, update EMAIL_FROM
 
 ## Post-MVP — Iteration 3 (future)
 - Native mobile app (React Native / Expo) — API layer already supports this
