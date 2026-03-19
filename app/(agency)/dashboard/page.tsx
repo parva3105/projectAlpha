@@ -2,8 +2,8 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { KanbanBoard, type KanbanDeal } from "@/components/kanban/KanbanBoard";
 import { KanbanFilters } from "@/components/kanban/KanbanFilters";
-import { isOverdue } from "@/lib/overdue";
-import type { DealStage } from "@/lib/stage-transitions";
+import { isOverdue } from "@/lib/overdue.client";
+import type { DealStage } from "@/lib/stage-transitions.client";
 
 interface DealFromApi {
   id: string;

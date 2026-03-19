@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import type { DealStage } from "@/lib/stage-transitions";
+import type { DealStage } from "@/lib/stage-transitions.client";
 
 export interface DealCardDeal {
   id: string;

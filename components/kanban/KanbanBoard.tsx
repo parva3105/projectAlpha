@@ -15,7 +15,7 @@ import {
   STAGE_LABELS,
   SYSTEM_CONTROLLED_STAGES,
   type DealStage,
-} from "@/lib/stage-transitions";
+} from "@/lib/stage-transitions.client";
 import { KanbanColumn } from "./KanbanColumn";
 import { DealCard, type DealCardDeal } from "@/components/deals/DealCard";
 
