@@ -23,6 +23,33 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-19 — M1 Task 4: Playwright e2e tests + CI fix
+**Type**: Testing / DevOps
+**Milestone**: M1 — Foundation
+**Branch**: feat/m1-e2e-tests
+**What changed**:
+- Installed `@playwright/test@^1.58.2`; added `test:e2e` + `test:e2e:report` scripts to `package.json`
+- Created `playwright.config.ts` at repo root — `baseURL` overridable via `PLAYWRIGHT_BASE_URL`; chromium only; retries: 1
+- Created 5 spec files in `e2e/`:
+  - `auth.unauthenticated.spec.ts` — protected routes redirect to /login (requires CLERK_SECRET_KEY in Vercel)
+  - `public.routes.spec.ts` — /login, /discover, /agencies, / all accessible without auth ✅
+  - `auth.signup.agency.spec.ts` — /signup/agency renders + main element visible ✅
+  - `auth.signup.creator.spec.ts` — /signup/creator renders + main element visible ✅
+  - `auth.signup.brand.spec.ts` — /signup/brand renders + main element visible ✅
+- Fixed `ci.yml` + `prod.yml` to trigger on both `main` and `master` (repo initialized with master, not main)
+- Test results against https://project-alpha-rho.vercel.app: **10/15 pass**
+  - 5 redirect tests fail — root cause: `CLERK_SECRET_KEY` + `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` not set in Vercel project env vars → clerkMiddleware passes all requests through unauthenticated
+**REQUIRED MANUAL ACTION**: Add the following to Vercel Dashboard → Project → Settings → Environment Variables:
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (from .env.local)
+  - `CLERK_SECRET_KEY` (from .env.local)
+  - `DATABASE_URL` (pooled, from .env.local)
+  - `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login`
+  - `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup`
+  Then redeploy. After that, re-run: `PLAYWRIGHT_BASE_URL=https://project-alpha-rho.vercel.app npx playwright test`
+**Next**: Merge PR → confirm Vercel redeploy → re-run e2e → all 15 green → M1 complete
+
+---
+
 ## 2026-03-19 — M1 Task 3: Clerk auth + role routing + skeleton layouts
 **Type**: Feature
 **Milestone**: M1 — Foundation
