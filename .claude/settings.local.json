@@ -4,7 +4,12 @@
       "Bash(npx create-next-app@latest brand-deal-manager --yes --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --turbopack --use-npm)",
       "Bash(npx shadcn@latest init -d)",
       "Bash(npx prisma:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "Bash(ls /c/Users/Hp/AwesomeClaudeSkills/ProjectAlpha/.claude/worktrees/agent-af54c613/app/\\\\\\(agency\\\\\\)/dashboard/)",
+      "Bash(cat /c/Users/Hp/AwesomeClaudeSkills/ProjectAlpha/.claude/worktrees/agent-af54c613/app/\\\\\\(agency\\\\\\)/dashboard/page.tsx)",
+      "Bash(ls /c/Users/Hp/AwesomeClaudeSkills/ProjectAlpha/.claude/worktrees/agent-af54c613/app/\\\\\\(agency\\\\\\)/)"
     ]
   }
 }
