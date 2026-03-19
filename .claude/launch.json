@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Brand Deal Manager (Next.js)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Users/Hp/AwesomeClaudeSkills/ProjectAlpha/node_modules/next/dist/bin/next",
+        "dev"
+      ],
+      "port": 3001,
+      "autoPort": false
+    }
+  ]
+}

@@ -49,9 +49,41 @@ _Append only. Never delete entries._
 
 ---
 
+## 2026-03-19 — Role routing: redirect wrong-role to their home, not /login
+**Decision**: When an authenticated user accesses a route for the wrong role, redirect them to their own role's home page (e.g. agency visiting /creator/deals → /dashboard), not to /login.
+**Reason**: Less confusing UX. The user is logged in — logging them out to /login is disorienting. Sending them "home" makes it clear they landed in the wrong area.
+**Exception**: Unauthenticated users always go to /login.
+
+---
+
+## 2026-03-19 — Sign-up role assignment via session.reload()
+**Decision**: After sign-up, set publicMetadata.role via API route, then redirect to /signup/complete where client calls `session.reload()` to force JWT refresh before routing to role home.
+**Reason**: Clerk JWT TTL is short (~60s) but not zero. The role claim may not be in the current JWT immediately after `updateUserMetadata`. `session.reload()` is the Clerk-idiomatic way to force a fresh token, avoiding a visible re-login step.
+
+---
+
+## 2026-03-19 — Prisma version: 5.x not 6.x
+**Decision**: Use Prisma 5.22.0 instead of Prisma 6.x.
+**Reason**: Node.js v20.11.1 is installed on the dev machine. Prisma 6 requires Node.js 20.19+, 22.12+, or 24+. Prisma 5 is production-stable, fully featured, and supports Node.js 20.x without issue.
+**When to revisit**: When Node.js is upgraded to 22 LTS or higher, migrate to Prisma 6 via `npx @prisma/migrate upgrade`.
+
+---
+
 ## 2026-03-18 — API versioning: /api/v1/
 **Decision**: All Route Handlers live at /api/v1/. Web app uses Server Actions that call these endpoints internally. Future mobile app (React Native / Expo) calls the same endpoints.
 **Reason**: Avoids an API rewrite when the mobile app is built. Versioning from day one costs nothing and prevents painful migrations.
+
+---
+
+## 2026-03-18 — Repo layout: lift app to root
+**Decision**: Moved brand-deal-manager/ to repo root instead of fixing working-directory in all workflows.
+**WHY**: Single-app repos belong at root. Subdirectory layout required working-directory hacks in every workflow step, Vercel root directory config, and confused the project structure map. Root layout is the Vercel standard and eliminates all of these issues.
+
+---
+
+## 2026-03-18 — CI/CD workflow strategy (Option C)
+**Decision**: Deleted staging.yml. CI/CD is now: ci.yml (PR quality gate) + prod.yml (push to main -> Vercel --prod + Prisma migrate).
+**WHY**: Vercel provides preview deployment URLs natively for every PR and branch push. A separate staging workflow is redundant for this single-app setup and adds maintenance overhead without benefit.
 
 ---
 

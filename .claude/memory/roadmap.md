@@ -35,6 +35,11 @@ M8 (Polish)        ← depends on all milestones complete
 
 ---
 
+## Pre-M1 — Completed refactors
+- Completed pre-M2 refactor: app lifted to repo root (refactor/lift-to-root PR)
+
+---
+
 ## M1 — Foundation
 **Goal**: Project runs locally. Three roles can log in and land on the right page.
 **Deliverable**: Three users (one per role) can sign up, log in, and see a blank dashboard appropriate to their role.

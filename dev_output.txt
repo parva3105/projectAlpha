@@ -20,3 +20,9 @@
 - Network:       http://192.168.1.167:3000
 ✓ Ready in 1514ms
 
+  Reload env: .env.local
+  Reload env: .env
+  Reload env: .env
+  Reload env: .env
+✓ Compiled in 285ms
+✓ Compiled in 310ms
