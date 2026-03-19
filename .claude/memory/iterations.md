@@ -202,3 +202,19 @@ _Append only. One entry per session or PR. Never delete._
 - `npm run typecheck` → zero errors ✅
 - `npm run lint` → 0 errors, 2 pre-existing warnings ✅
 - `npm run build` → success, all 3 new routes compile as dynamic (ƒ) ✅
+
+---
+
+## 2026-03-19 — M2 orchestration complete. All 4 PRs merged.
+**Type**: Orchestration
+**Milestone**: M2 — Agency Deal Pipeline
+**What changed**:
+- Phase 1 (Backend): PR #3 merged — deal pipeline API routes, stage logic, roster, Zod schemas, 39 tests
+- Phase 2 (Frontend A): PR #6 merged — Kanban board, deal card, dnd-kit drag-and-drop, dashboard filters, 9 tests
+- Phase 2 (Frontend B): PR #5 merged — /deals/new form, brand inline creation, /deals/:id detail, 14 tests
+- Phase 2 (Frontend C): PR #4 merged — /brands, /brands/:id, /roster pages, 14 tests
+- Conflict resolution: rebased PRs #5 and #6 onto master after PRs #3 and #4 merged
+- Created lib/stage-transitions.client.ts and lib/overdue.client.ts for 'use client' component compatibility
+- Fix applied to all branches: postinstall: "prisma generate" for Vercel build compatibility
+- Total: 76 tests across 4 PRs, all passing
+- All 13 M2 tasks delivered

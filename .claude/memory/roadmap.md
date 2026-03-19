@@ -8,7 +8,7 @@ _Last updated: 2026-03-19_
 | # | Name | Est. duration | Status |
 |---|---|---|---|
 | M1 | Foundation | 2–3 days | ✅ Complete |
-| M2 | Agency Deal Pipeline | 5–7 days | 🔲 Not started |
+| M2 | Agency Deal Pipeline | 5–7 days | ✅ Complete |
 | M3 | Creator Portal + Content Approval | 3–4 days | 🔲 Not started |
 | M4 | File Uploads | 3–4 days | 🔲 Not started |
 | M5 | Discovery Layer | 4–5 days | 🔲 Not started |
@@ -59,23 +59,23 @@ M8 (Polish)        ← depends on all milestones complete
 
 ---
 
-## M2 — Agency Deal Pipeline
+## M2 — Agency Deal Pipeline ✅ COMPLETE (2026-03-19)
 **Goal**: Agency can create deals and move them through the full pipeline.
 **Deliverable**: Agency can create deals, assign manually-entered creators, move through pipeline, track payment.
 
-- [ ] `/dashboard` — Kanban board with 8 stage columns (static first)
-- [ ] Deal card component (title, brand, creator, deadline, value, overdue indicator)
-- [ ] `/deals/new` — create deal form (Zod validation)
-- [ ] Brand inline-creation from deal form
-- [ ] `/deals/:id` — Deal detail (Section A: Brief, B: Contract, C: Content placeholder, D: Payment)
-- [ ] Manual stage advancement (button-based)
-- [ ] Stage validation (no backward movement except Reopen)
-- [ ] Reopen action (one step back)
-- [ ] Overdue indicator logic (past deadline + not Live/Closed)
-- [ ] Kanban drag-and-drop with dnd-kit (replaces buttons)
-- [ ] Dashboard filters: platform, creator, brand, overdue only
-- [ ] `/brands` and `/brands/:id` pages
-- [ ] `/roster` page (agency manually adds creators)
+- [x] `/dashboard` — Kanban board with 8 stage columns — PR #6
+- [x] Deal card component (title, brand, creator, deadline, value, overdue indicator) — PR #6
+- [x] `/deals/new` — create deal form (Zod validation) — PR #5
+- [x] Brand inline-creation from deal form — PR #5
+- [x] `/deals/:id` — Deal detail (Section A: Brief, B: Contract, C: Content placeholder, D: Payment) — PR #5
+- [x] Manual stage advancement (button-based) — PR #5
+- [x] Stage validation (no backward movement except Reopen) — PR #3
+- [x] Reopen action (one step back) — PR #3
+- [x] Overdue indicator logic (past deadline + not Live/Closed) — PR #3 + #6
+- [x] Kanban drag-and-drop with dnd-kit (replaces buttons) — PR #6
+- [x] Dashboard filters: platform, creator, brand, overdue only — PR #6
+- [x] `/brands` and `/brands/:id` pages — PR #4
+- [x] `/roster` page (agency manually adds creators) — PR #4
 
 ---
 

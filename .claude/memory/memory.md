@@ -2,14 +2,18 @@
 _Last updated: 2026-03-19_
 
 ## Current state
-- Status: **M1 COMPLETE ✅** — Ready to begin M2
-- Active milestone: M2 — Agency Deal Pipeline
+- Status: **M2 COMPLETE** ✅ — Ready to begin M3
+- Active milestone: M3 — Creator Portal + Content Approval (next)
 - Production URL: https://project-alpha-rho.vercel.app (deployed, all env vars baked in)
 - Vercel Root Directory: blank (repo root) — confirmed correct
-- Vercel CLI installed (`vercel` v50.33.1), project linked to parva3105s-projects/project-alpha
 - GitHub repo: https://github.com/parva3105/projectAlpha
-- Branch `feat/m1-e2e-tests` open — contains Playwright e2e suite (15/15 pass), CI fixes
 - All env vars confirmed in Vercel production (21 vars)
+
+## M2 PRs — all merged ✅
+- PR #3: Backend API routes, stage logic, roster (feat/m2-backend-api)
+- PR #4: /brands, /brands/:id, /roster pages (feat/m2-secondary-pages)
+- PR #5: /deals/new form, brand inline creation, /deals/:id detail (feat/m2-deal-pages)
+- PR #6: Kanban board, deal card, drag-and-drop, filters (feat/m2-kanban-board)
 
 ## M1 deliverables — all complete ✅
 - Next.js 16 + shadcn/ui + Geist fonts — scaffolded
