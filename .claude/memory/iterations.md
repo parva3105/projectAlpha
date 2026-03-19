@@ -177,3 +177,28 @@ _Append only. One entry per session or PR. Never delete._
 - Defined 8-milestone implementation plan (M1–M8, ~26–35 days total)
 - No code written yet. All external services still to be provisioned.
 **Next**: Provision external services (Vercel, Neon, Clerk, R2, Resend, Trigger.dev, Upstash), then begin M1.
+---
+
+## 2026-03-19 — M2 Frontend C: /brands, /brands/:id, and /roster pages
+**Type**: Feature
+**Milestone**: M2 — Agency Deal Pipeline
+**Branch**: feat/m2-secondary-pages
+**What changed**:
+- Merged `feat/m2-backend-api` into worktree branch to access API routes
+- Installed shadcn/ui components: table, dialog, sheet, badge, select, input, label (all via `npx shadcn@latest add`)
+- Installed `@testing-library/react`, `@testing-library/jest-dom`, `jsdom@24` (downgraded from v29 — Node 20.11.1 incompatibility)
+- Updated `vitest.config.ts`: added `components/__tests__/**/*.test.tsx` glob with `jsdom` environment via `environmentMatchGlobs`; added `vitest.setup.ts` for `@testing-library/jest-dom` matchers
+- Created `vitest.setup.ts` importing `@testing-library/jest-dom`
+- Created `components/brands/brands-table.tsx` — client-side presentational table with empty state; BrandRow type exported
+- Created `components/brands/add-brand-dialog.tsx` — client Dialog component with client-side validation (name required, URL format); POSTs to /api/v1/brands; calls `router.refresh()` on success
+- Created `components/roster/roster-table.tsx` — client-side table with @handle formatting and empty state; CreatorRow type exported
+- Created `components/roster/add-creator-form.tsx` — client form with name/handle/platform/email fields; client-side validation matching server Zod schema; onSuccess callback
+- Created `components/roster/add-creator-sheet.tsx` — Sheet wrapper around AddCreatorForm; calls `router.refresh()` on success
+- Created `app/(agency)/brands/page.tsx` — Server Component; fetches GET /api/v1/brands server-side; renders BrandsTable + AddBrandDialog; `force-dynamic`
+- Created `app/(agency)/brands/[id]/page.tsx` — Server Component; fetches GET /api/v1/brands/:id (includes deals[]); renders brand header + deals table with stage badges; calls notFound() on 404; `force-dynamic`
+- Created `app/(agency)/roster/page.tsx` — Server Component; fetches GET /api/v1/roster server-side; renders RosterTable + AddCreatorSheet; note about M5; `force-dynamic`
+- Created `components/__tests__/brands.test.tsx` — 14 vitest component tests (TDD): BrandsTable (6 tests), RosterTable (4 tests), AddCreatorForm validation (4 tests)
+- All 53 tests pass (39 pre-existing + 14 new) ✅
+- `npm run typecheck` → zero errors ✅
+- `npm run lint` → 0 errors, 2 pre-existing warnings ✅
+- `npm run build` → success, all 3 new routes compile as dynamic (ƒ) ✅

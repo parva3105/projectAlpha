@@ -146,3 +146,16 @@ The following were evaluated and explicitly excluded from MVP. Do not reopen wit
 - Native mobile app
 - Social platform API sync for follower/engagement data
 - Brand manager ↔ creator direct messaging
+---
+
+## 2026-03-19 — Server-side fetch pattern for RSC pages
+**Decision**: Agency RSC pages that need authenticated data use server-side `fetch()` with the request's cookie header forwarded, rather than calling Prisma directly from the page.
+**Reason**: Keeps pages consistent with the `{ data, error }` API contract; makes the same API callable from mobile clients in the future; avoids importing Prisma in page files (which are in the frontend agent's domain). Host is inferred from the `host` request header; protocol is derived from whether the host is localhost.
+**Alternatives considered**: Direct Prisma calls in RSC (simpler but couples pages to DB); import server actions (good alternative, deferred to M3 when we have a mutations layer).
+
+---
+
+## 2026-03-19 — jsdom version pinned to v24 for Node 20.11.1 compatibility
+**Decision**: Downgraded jsdom from v29 (installed by default) to v24 in devDependencies.
+**Reason**: jsdom v29 requires Node >=20.19.0; the project runs on Node 20.11.1. v24 is compatible and supports all required testing features.
+**Alternatives considered**: Upgrade Node (blocked — system constraint); skip component tests in jsdom (violates TDD mandate).
