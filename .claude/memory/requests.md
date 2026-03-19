@@ -3,6 +3,24 @@ _Backlog of features, fixes, and open questions. Append new items. Mark resolved
 
 ---
 
+## Open — M2 (discovered during M2 backend implementation)
+
+### REQ-M2-001: Creator model has no email field
+**Type**: Gap / Future Enhancement
+**Priority**: P2
+**What**: `AddCreatorToRosterSchema` accepts `email` for completeness but cannot persist it — the `Creator` model in `prisma/schema.prisma` has no `email` column. If email is needed for manually-rostered creators, a migration must add `Creator.email String?`.
+**Status**: Open — database agent to action in a future milestone if needed.
+
+---
+
+### REQ-M2-002: Brands are global (not agency-scoped) — may need scoping
+**Type**: Design decision to revisit
+**Priority**: P2
+**What**: `GET /api/v1/brands` returns all brands regardless of which agency created them. This is consistent with the current schema (Brand has no `agencyClerkId`). If multi-agency support is ever added, brands would need to be agency-scoped.
+**Status**: Acceptable for MVP (single-agency); log here to revisit if multi-agency lands.
+
+---
+
 ## Open — M2
 
 ### REQ-003: Set Clerk session token claim before first sign-up
