@@ -35,6 +35,13 @@ M8 (Polish)        ← depends on all milestones complete
 
 ---
 
+## Pre-M3 — Regression fixes (2026-03-19)
+- [🔄 PR Open] **PR #8** `fix/pre-m3-proxy-loop` — proxy.ts redirect loop guard for stale JWT
+- [🔄 PR Open] **PR #9** `fix/pre-m3-landing-auth` — landing page, /signup role picker, branded auth layouts
+- ⚠️ REQUIRED MANUAL STEP: Clerk dashboard → Configure → Sessions → Customize session token → add `{ "metadata": "{{user.public_metadata}}" }` → Save
+
+---
+
 ## Pre-M1 — Completed refactors
 - Completed pre-M2 refactor: app lifted to repo root (refactor/lift-to-root PR)
 
