@@ -6,8 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export default async function Home() {
-  const { sessionClaims } = await auth();
-  const role = (sessionClaims?.metadata as { role?: string })?.role;
+  // auth() throws in Clerk test mode when the dev-browser cookie is absent.
+  // Separate the auth call from the redirects so NEXT_REDIRECT errors still
+  // propagate correctly (redirect() must NOT be inside a try-catch).
+  let role: string | undefined;
+  try {
+    const { sessionClaims } = await auth();
+    role = (sessionClaims?.metadata as { role?: string })?.role;
+  } catch {
+    // Fall through — unauthenticated landing page will be shown.
+  }
 
   if (role === "agency") redirect("/dashboard");
   if (role === "creator") redirect("/creator/deals");
