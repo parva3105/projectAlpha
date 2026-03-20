@@ -1,9 +1,15 @@
 # Project memory — Brand Deal Manager
-_Last updated: 2026-03-19_
+_Last updated: 2026-03-20_
+
+## Revamp (active)
+- Branch: revamp/phase-1
+- Approach: Frontend-first — UI shell with mock data → real API → auth
+- Spec: /revamp/ directory (README, PRODUCT, ARCHITECTURE, ROADMAP, FRONTEND, BACKEND, MOCKDATA)
+- Old M1+M2 code archived in _archive/
 
 ## Current state
-- Status: **M2 COMPLETE** ✅ — Pre-M3 fixes in progress (2 PRs open)
-- Active milestone: Pre-M3 fixes → then M3 — Creator Portal + Content Approval
+- Status: **Revamp started** — Phase 1 UI Shell in progress
+- Active milestone: Phase 1 — UI Shell (all pages with mock data, no DB, no Clerk)
 
 ## Pre-M3 fixes in progress — 2 PRs open
 - **PR #8** `fix/pre-m3-proxy-loop` — proxy.ts redirect loop guard (stale JWT)
