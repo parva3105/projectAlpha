@@ -2,8 +2,13 @@
 _Last updated: 2026-03-19_
 
 ## Current state
-- Status: **M2 COMPLETE** ✅ — Ready to begin M3
-- Active milestone: M3 — Creator Portal + Content Approval (next)
+- Status: **M2 COMPLETE** ✅ — Pre-M3 fixes in progress (2 PRs open)
+- Active milestone: Pre-M3 fixes → then M3 — Creator Portal + Content Approval
+
+## Pre-M3 fixes in progress — 2 PRs open
+- **PR #8** `fix/pre-m3-proxy-loop` — proxy.ts redirect loop guard (stale JWT)
+- **PR #9** `fix/pre-m3-landing-auth` — landing page + /signup role picker + branded auth layouts
+- ⚠️ Both PRs must be merged AND the Clerk dashboard step completed before M3 begins
 - Production URL: https://project-alpha-rho.vercel.app (deployed, all env vars baked in)
 - Vercel Root Directory: blank (repo root) — confirmed correct
 - GitHub repo: https://github.com/parva3105/projectAlpha

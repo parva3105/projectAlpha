@@ -161,7 +161,40 @@ The following were evaluated and explicitly excluded from MVP. Do not reopen wit
 
 ---
 
-## 2026-03-19 — jsdom version pinned to v24 for Node 20.11.1 compatibility
+## 2026-03-19 — jsdom version pinned to v24 for Node 20.11.1 compatibility ⚠️ SUPERSEDED
 **Decision**: Downgraded jsdom from v29 (installed by default) to v24 in devDependencies.
 **Reason**: jsdom v29 requires Node >=20.19.0; the project runs on Node 20.11.1. v24 is compatible and supports all required testing features.
 **Alternatives considered**: Upgrade Node (blocked — system constraint); skip component tests in jsdom (violates TDD mandate).
+**SUPERSEDED BY**: "happy-dom for all vitest environments" decision below — jsdom was later abandoned entirely in favour of happy-dom due to a transitive ESM conflict.
+
+---
+
+## 2026-03-19 — happy-dom for all vitest environments
+**Decision**: All vitest `environmentMatchGlobs` entries use `"happy-dom"` instead of `"jsdom"`.
+**Reason**: `jsdom@29` (installed as transitive dep despite the v24 pin) pulls in `html-encoding-sniffer@6` which does a synchronous `require()` of `@exodus/bytes` (pure-ESM only). This crashes the jsdom environment with an unhandled error that exits vitest with code 1 even when all tests pass — failing CI. `happy-dom` (already installed) has no such transitive dependency and is fully compatible with all existing tests.
+**Effect**: Both `components/__tests__/**/*.test.tsx` and `app/**/*.test.tsx` use `happy-dom`. 100/100 tests pass, zero unhandled errors.
+
+---
+
+## 2026-03-19 — Proxy loop guard for stale JWT
+**Decision**: In `proxy.ts`, before redirecting to `/signup/complete` when `role` is missing, check `req.nextUrl.pathname === "/signup/complete"` and return early if true.
+**Reason**: When the Clerk session token claim (`{{ user.public_metadata }}`) is not configured in the Clerk dashboard, or when a JWT was issued before a role was assigned, `sessionClaims.metadata.role` is undefined. Without the guard, the proxy redirects to `/signup/complete` even when the user is already there — causing a visible redirect loop. The `/signup/complete` page handles staleness client-side via `session.reload()`.
+**Constraint**: Never call external APIs from `proxy.ts` (it is Next.js middleware running on the edge). The guard is a pure pathname check with no I/O.
+
+---
+
+## 2026-03-19 — Landing page auth redirect (server-side)
+**Decision**: Authenticated user redirect on `/` handled via `auth()` + `redirect()` inside the Server Component (`app/page.tsx`), not in `proxy.ts`.
+**Reason**: Keeps proxy.ts free of per-page redirect logic. Server Component redirect is synchronous and instant — no client-side flash. Role read from `(sessionClaims?.metadata as { role?: string })?.role`.
+
+---
+
+## 2026-03-19 — /signup hash detection for Clerk SSO compatibility
+**Decision**: `/signup/page.tsx` reads `window.location.hash` on mount to decide between showing the role picker (direct visit) or `<SignUp>` (Clerk SSO multi-step flow).
+**Reason**: Clerk SSO flows (Google, phone verification) redirect back to `/signup` with a hash fragment (`#/continue`, `#/factor-one`). Detecting the hash on one route preserves SSO compatibility without adding a new route. Direct visits (no hash) show the pre-auth role picker.
+
+---
+
+## 2026-03-19 — Button asChild not available; use Link + buttonVariants()
+**Decision**: For anchor-styled buttons (links that look like buttons), use `Link` from `next/link` with `buttonVariants()` class applied directly — not `<Button asChild>`.
+**Reason**: The project's `components/ui/button.tsx` wraps `@base-ui/react/button`, which does not expose a Radix-style `asChild` prop. Applying `buttonVariants()` to a `Link` achieves the same visual result without the prop.
