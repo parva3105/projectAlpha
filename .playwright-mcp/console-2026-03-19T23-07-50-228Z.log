@@ -1,0 +1,19 @@
+[     338ms] [WARNING] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview @ https://learning-ringtail-8.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:11
+[     579ms] [WARNING] Clerk: Structural CSS detected that may break on updates.
+
+Found:
+  - CSS "[dir="rtl"] .cl-internal-1jsjkoi"
+  - CSS "[dir="rtl"] .cl-internal-nm4egn"
+  - CSS ".cl-internal-z67xc4:empty"
+  - CSS ".cl-internal-z67xc4 > :first-of-type"
+  - CSS ".cl-internal-z67xc4 > :not(:first-of-type)"
+  (+9 more)
+
+These selectors depend on the internal DOM structure of Clerk's components, which may change when Clerk deploys component updates.
+To prevent breaking changes, install @clerk/ui and pass it to ClerkProvider:
+
+  import { ui } from '@clerk/ui'
+  <ClerkProvider ui={ui}>
+
+Learn more: https://clerk.com/docs/reference/components/versioning
+(code=structural_css_pin_clerk_ui) @ https://learning-ringtail-8.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js:14
