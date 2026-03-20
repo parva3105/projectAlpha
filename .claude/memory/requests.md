@@ -94,3 +94,7 @@ They receive a one-click verification link.
 **Priority**: P3
 **What**: `GET /api/v1/brands` returns brands without deal aggregates. The BrandsTable renders openDealCount and totalDealValue as 0 for all rows. To show real aggregates, the API would need to include deal counts/sums per brand (or the frontend would need N+1 fetches per brand). The brand detail page (via GET /api/v1/brands/:id) includes full deals[].
 **Status**: Acceptable for MVP. Backend agent to add aggregate fields to GET /api/v1/brands in a future iteration.
+
+---
+
+## No new requests from fix/pre-m3-landing-auth iteration.

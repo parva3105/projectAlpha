@@ -3,6 +3,18 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-19 — fix/pre-m3-landing-auth
+- Landing page at / — server-side auth redirect, hero + benefits + role cards
+- /signup role picker with SSO hash guard (Clerk flow detected via window.location.hash via lazy useState initializer)
+- AuthLayout component (two-panel: branded left + Clerk right)
+- Branded login and all three signup pages wrapped in AuthLayout
+- Vitest tests: components/__tests__/signup-role-picker.test.tsx, components/__tests__/auth-layout.test.tsx, app/page.test.tsx
+- Fixed lint: useEffect setState pattern replaced with lazy useState initializer for hash detection
+- Fixed typecheck: Button asChild not supported by @base-ui/react/button; replaced with Link + buttonVariants
+- Turbopack build error is pre-existing in worktree environment (same on master); typecheck + lint both pass clean
+
+---
+
 ## 2026-03-19 — M2: Deal Pipeline API Routes
 **Type**: Feature
 **Milestone**: M2 — Agency Deal Pipeline

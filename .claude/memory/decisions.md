@@ -162,6 +162,25 @@ The following were evaluated and explicitly excluded from MVP. Do not reopen wit
 ---
 
 ## 2026-03-19 — jsdom version pinned to v24 for Node 20.11.1 compatibility ⚠️ SUPERSEDED
+## 2026-03-19 — Landing page auth redirect (server-side)
+**Decision**: auth() + redirect() in the Server Component at app/page.tsx.
+**Reason**: Keeps proxy.ts free of per-page logic. Server Component redirect is instant — no client-side flash.
+
+---
+
+## 2026-03-19 — /signup hash detection for SSO compatibility
+**Decision**: Lazy useState initializer reads window.location.hash on mount to detect Clerk SSO multi-step flows.
+**Reason**: Clerk SSO multi-step (Google, phone verification) appends a hash fragment (#/continue, #/factor-one). Detecting the hash on the same /signup route preserves SSO compatibility without adding a new route. Role picker shown on direct visit (no hash). Lazy initializer pattern avoids useEffect and satisfies react-hooks/set-state-in-effect lint rule.
+
+---
+
+## 2026-03-19 — Button asChild not available in @base-ui/react/button
+**Decision**: Use Link + buttonVariants() for anchor-styled buttons instead of Button asChild.
+**Reason**: The project's shadcn/ui button.tsx uses @base-ui/react/button which does not expose an asChild prop. Radix-style asChild is not available. Resolved by applying buttonVariants() class to next/link directly.
+
+---
+
+## 2026-03-19 — jsdom version pinned to v24 for Node 20.11.1 compatibility
 **Decision**: Downgraded jsdom from v29 (installed by default) to v24 in devDependencies.
 **Reason**: jsdom v29 requires Node >=20.19.0; the project runs on Node 20.11.1. v24 is compatible and supports all required testing features.
 **Alternatives considered**: Upgrade Node (blocked — system constraint); skip component tests in jsdom (violates TDD mandate).
