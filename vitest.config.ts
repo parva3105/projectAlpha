@@ -8,9 +8,11 @@ export default defineConfig({
     include: [
       "lib/__tests__/**/*.test.ts",
       "components/__tests__/**/*.test.tsx",
+      "app/**/*.test.tsx",
     ],
     environmentMatchGlobs: [
-      ["components/__tests__/**/*.test.tsx", "jsdom"],
+      ["components/__tests__/**/*.test.tsx", "happy-dom"],
+      ["app/**/*.test.tsx", "happy-dom"],
     ],
     setupFiles: ["./vitest.setup.ts"],
   },
