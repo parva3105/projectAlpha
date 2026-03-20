@@ -67,7 +67,7 @@ describe("Landing page — app/page.tsx", () => {
 
   it("primary CTA has href /signup", async () => {
     await renderLandingPage();
-    const link = screen.getByRole("link", { name: /get started/i });
+    const link = screen.getByRole("link", { name: /^get started$/i });
     expect(link).toHaveAttribute("href", "/signup");
   });
 

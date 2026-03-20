@@ -12,7 +12,7 @@ export default defineConfig({
     ],
     environmentMatchGlobs: [
       ["components/__tests__/**/*.test.tsx", "jsdom"],
-      ["app/**/*.test.tsx", "jsdom"],
+      ["app/**/*.test.tsx", "happy-dom"],
     ],
     setupFiles: ["./vitest.setup.ts"],
   },
