@@ -98,3 +98,26 @@ They receive a one-click verification link.
 ---
 
 ## No new requests from fix/pre-m3-landing-auth iteration.
+
+---
+
+## 2026-03-20 — Phase 1 gaps discovered (for Phase 2)
+
+### /brand/briefs — stub not built
+The brand sidebar nav links to /brand/briefs but no page was built in Phase 1. Will 404.
+Action: Build in Phase 2 as part of brand manager wire-up.
+
+### Mock data: creator_001 deals only
+/creator/deals and /creator/deals/[id] are hardcoded to filter by creator_001 (Aria Chen).
+In Phase 2, replace with real Clerk userId from auth().
+
+### /creators/[handle] — private creators 404
+Creators with isPublic=false are not accessible at /creators/:handle (returns notFound).
+creator_005 (Sam Rivera, isPublic=false) cannot be viewed publicly — this is correct behavior.
+
+### Stage PENDING_APPROVAL + LIVE in Kanban
+Dragging cards to PENDING_APPROVAL or LIVE columns shows an error toast. Users must submit content or approve to reach these stages. This is correct behavior per the stage rules.
+
+### Partnership Request dialog — no role check in Phase 1
+In Phase 1, the "Send Partnership Request" button is always visible on /creators/[handle].
+Phase 3: restrict to agency role only.
