@@ -40,7 +40,7 @@ npm run dev
 npx trigger.dev@latest dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3003.
 
 ---
 

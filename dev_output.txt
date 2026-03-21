@@ -3,7 +3,7 @@
 > next dev
 
 ▲ Next.js 16.2.0 (Turbopack)
-- Local:         http://localhost:3000
+- Local:         http://localhost:3003
 - Network:       http://192.168.1.167:3000
 ✓ Ready in 1008ms
 ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
@@ -16,7 +16,7 @@
 
 ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
 ▲ Next.js 16.2.0 (Turbopack)
-- Local:         http://localhost:3000
+- Local:         http://localhost:3003
 - Network:       http://192.168.1.167:3000
 ✓ Ready in 1514ms
 
