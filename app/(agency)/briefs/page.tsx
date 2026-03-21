@@ -1,8 +1,8 @@
-import { apiUrl } from '@/lib/api'
+import { serverFetch } from '@/lib/api'
 import { BriefsTable } from '@/components/briefs/BriefsTable'
 
 export default async function BriefsPage() {
-  const res = await fetch(apiUrl('/api/v1/briefs'), { cache: 'no-store' })
+  const res = await serverFetch('/api/v1/briefs', { cache: 'no-store' })
   const { data: briefs } = await res.json()
 
   if ((briefs ?? []).length === 0) {

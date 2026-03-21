@@ -3,6 +3,32 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-21 — Phase 3: Auth + Superadmin + Polish (revamp/phase-3)
+
+### What changed
+- **Real Clerk auth wired**: deleted `lib/auth-helpers.ts` (hardcoded stubs). All 9 API routes now call `requireAgencyAuth()` / `requireCreatorAuth()` / `requireBrandAuth()` from `lib/auth.ts`.
+- **ClerkProvider**: `app/layout.tsx` now wraps with `<ClerkProvider>` instead of `<RoleProvider>`.
+- **Deleted `lib/role-context.tsx`**: Clerk is now source of truth for identity.
+- **RoleSwitcher rewrite**: uses `useUser()` from Clerk; renders null for non-superadmin; sets `active_perspective` cookie on change.
+- **Header**: replaced `useRole()` with `useUser()` from Clerk.
+- **Rate limiting**: `lib/rate-limit.ts` rewritten with lazy singletons (`getAuthRateLimit()`, `getUploadRateLimit()`) to prevent build-time crash when Upstash env vars absent.
+- **Resend lazy init**: `jobs/send-email.ts` uses `getResend()` singleton for same reason.
+- **8 email templates**: `changes-requested`, `content-approved`, `payment-received`, `deadline-warning`, `partnership-request`, `partnership-accepted`, `partnership-declined`, `new-brief`.
+- **Email triggers**: fire-and-forget `sendEmailJob.trigger()` wired to 10 API events across deals, submissions, partnerships, briefs.
+- **Upload rate limiting**: `app/api/v1/deals/[id]/submissions/route.ts` POST now checks `getUploadRateLimit()`.
+- **Auth pages**: `/login`, `/signup`, `/signup/agency`, `/signup/creator`, `/signup/brand`, `/signup/complete`.
+- **Loading/error boundaries**: `loading.tsx` + `error.tsx` added to `(agency)`, `(creator)`, `(brand)` route groups.
+- **Empty states**: dashboard, deals, roster, brands, briefs pages.
+- **`proxy.ts` fix**: added `/api/v1/creators(.*)` to `isPublicRoute` (was causing /discover 500).
+- **`serverFetch()` helper**: added to `lib/api.ts`; all protected server components now forward Clerk session cookie on internal HTTP fetches, fixing `SyntaxError: Unexpected token '<'` on all agency/creator pages.
+- **Smoke tests**: `e2e/smoke.spec.ts` (3 flows) + `e2e/helpers/auth.ts`.
+- **CI/CD**: Clerk env vars added to `.github/workflows/ci.yml` and `prod.yml`.
+
+### Why
+Phase 3 milestone — activate real auth replacing hardcoded test stubs, add superadmin role, polish UI, wire email notifications.
+
+---
+
 ## 2026-03-21 — revamp/phase-3: Auth + Superadmin + Email + Polish
 **Type**: Feature
 **Branch**: revamp/phase-3

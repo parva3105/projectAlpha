@@ -1,4 +1,4 @@
-import { apiUrl } from '@/lib/api'
+import { serverFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
@@ -16,7 +16,7 @@ const STAGE_LABELS: Record<string, string> = {
 }
 
 export default async function CreatorDealsPage() {
-  const res = await fetch(apiUrl('/api/v1/deals?creatorId=creator_seed_001'), { cache: 'no-store' })
+  const res = await serverFetch('/api/v1/deals', { cache: 'no-store' })
   const { data } = await res.json()
   const myDeals = data ?? []
 

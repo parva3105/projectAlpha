@@ -1,8 +1,8 @@
-import { apiUrl } from '@/lib/api'
+import { serverFetch } from '@/lib/api'
 import { DealsTable } from '@/components/deals/DealsTable'
 
 export default async function DealsPage() {
-  const res = await fetch(apiUrl('/api/v1/deals'), { cache: 'no-store' })
+  const res = await serverFetch('/api/v1/deals', { cache: 'no-store' })
   const { data: deals } = await res.json()
 
   if ((deals ?? []).length === 0) {

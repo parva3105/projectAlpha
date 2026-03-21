@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { apiUrl } from '@/lib/api'
+import { serverFetch } from '@/lib/api'
 import { CreatorDealDetail } from '@/components/creator/CreatorDealDetail'
 
 export default async function CreatorDealDetailPage({
@@ -8,7 +8,7 @@ export default async function CreatorDealDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const res = await fetch(apiUrl(`/api/v1/deals/${id}`), { cache: 'no-store' })
+  const res = await serverFetch(`/api/v1/deals/${id}`, { cache: 'no-store' })
   if (!res.ok) notFound()
   const { data: deal } = await res.json()
   if (!deal) notFound()

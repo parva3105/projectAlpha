@@ -1,10 +1,10 @@
-import { apiUrl } from '@/lib/api'
+import { serverFetch } from '@/lib/api'
 import { BrandsTable } from '@/components/brands/BrandsTable'
 
 export default async function BrandsPage() {
   const [brandsRes, dealsRes] = await Promise.all([
-    fetch(apiUrl('/api/v1/brands'), { cache: 'no-store' }),
-    fetch(apiUrl('/api/v1/deals'), { cache: 'no-store' }),
+    serverFetch('/api/v1/brands', { cache: 'no-store' }),
+    serverFetch('/api/v1/deals', { cache: 'no-store' }),
   ])
   const { data: brands } = await brandsRes.json()
   const { data: deals } = await dealsRes.json()
