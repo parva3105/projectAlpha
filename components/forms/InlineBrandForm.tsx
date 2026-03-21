@@ -36,6 +36,7 @@ export function InlineBrandForm({ onCreated, onCancel }: InlineBrandFormProps) {
 
   function onSubmit(data: InlineBrandInput) {
     const newBrand: MockBrand = {
+      // eslint-disable-next-line react-hooks/purity
       id: `brand_${Date.now()}`,
       name: data.name,
       website: data.website || null,

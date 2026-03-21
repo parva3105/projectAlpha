@@ -23,6 +23,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem(ROLE_KEY) as Role | null
     if (stored && ['agency', 'creator', 'brand_manager'].includes(stored)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRoleState(stored)
     }
   }, [])

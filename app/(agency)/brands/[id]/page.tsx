@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { mockBrands } from '@/lib/mock/brands'
-import { mockDeals } from '@/lib/mock/deals'
+import { apiUrl } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -37,10 +36,12 @@ export default async function BrandDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const brand = mockBrands.find(b => b.id === id)
+  const res = await fetch(apiUrl(`/api/v1/brands/${id}`), { cache: 'no-store' })
+  if (!res.ok) notFound()
+  const { data: brand } = await res.json()
   if (!brand) notFound()
 
-  const brandDeals = mockDeals.filter(d => d.brandId === id)
+  const brandDeals = brand.deals ?? []
 
   return (
     <div className="p-6 space-y-6">
@@ -81,7 +82,7 @@ export default async function BrandDetailPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {brandDeals.map(deal => (
+                {(brandDeals as Array<{ id: string; title: string; stage: string; creator: { name: string } | null; dealValue: number; deadline: string }>).map(deal => (
                   <TableRow key={deal.id}>
                     <TableCell>
                       <Link

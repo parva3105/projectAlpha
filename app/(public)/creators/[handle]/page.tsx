@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { mockCreators } from '@/lib/mock/creators'
+import { apiUrl } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { PartnershipRequestDialog } from '@/components/creator/PartnershipRequestDialog'
 
@@ -9,12 +9,20 @@ export default async function CreatorProfilePage({
   params: Promise<{ handle: string }>
 }) {
   const { handle } = await params
-  const creator = mockCreators.find(c => c.handle === handle && c.isPublic)
-  if (!creator) notFound()
+  const res = await fetch(apiUrl(`/api/v1/creators/${handle}`), { cache: 'no-store' })
+  if (!res.ok) notFound()
+  const { data: creatorData } = await res.json()
+  if (!creatorData) notFound()
+
+  const creator = creatorData as {
+    name: string; handle: string; bio: string | null
+    platforms: string[]; nicheTags: string[]
+    followerCount: number | null; engagementRate: number | null
+  }
 
   const initials = creator.name
     .split(' ')
-    .map(n => n[0])
+    .map((n: string) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
@@ -32,7 +40,7 @@ export default async function CreatorProfilePage({
             <p className="mt-2 text-sm text-muted-foreground leading-6">{creator.bio}</p>
           )}
           <div className="flex flex-wrap gap-2 mt-3">
-            {creator.platforms.map(p => (
+            {creator.platforms.map((p: string) => (
               <Badge key={p} variant="outline">
                 {p}
               </Badge>
@@ -61,7 +69,7 @@ export default async function CreatorProfilePage({
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8">
-        {creator.nicheTags.map(t => (
+        {creator.nicheTags.map((t: string) => (
           <Badge key={t} variant="secondary">
             {t}
           </Badge>

@@ -31,6 +31,7 @@ export function ContentSubmissionForm({
 
   function onSubmit(data: FormValues) {
     const newSubmission: MockSubmission = {
+      // eslint-disable-next-line react-hooks/purity
       id: `sub_${Date.now()}`,
       dealId,
       creatorId: 'creator_001',

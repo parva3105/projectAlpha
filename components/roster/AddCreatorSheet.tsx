@@ -51,7 +51,9 @@ export function AddCreatorSheet({ onCreated }: AddCreatorSheetProps) {
 
   function onSubmit(data: FormValues) {
     const newCreator: MockCreator = {
+      // eslint-disable-next-line react-hooks/purity
       id: `creator_${Date.now()}`,
+      // eslint-disable-next-line react-hooks/purity
       clerkId: `clerk_${Date.now()}`,
       name: data.name,
       handle: data.handle,

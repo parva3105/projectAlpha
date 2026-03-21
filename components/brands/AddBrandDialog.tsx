@@ -36,6 +36,7 @@ export function AddBrandDialog({ onCreated }: AddBrandDialogProps) {
 
   function onSubmit(data: FormValues) {
     const newBrand: MockBrand = {
+      // eslint-disable-next-line react-hooks/purity
       id: `brand_${Date.now()}`,
       name: data.name,
       website: data.website || null,
