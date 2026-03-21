@@ -33,7 +33,7 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { label: 'Profile', href: '/creator/profile', icon: User },
   ],
   brand_manager: [
-    { label: 'Submit Brief', href: '/briefs/new', icon: PenLine },
+    { label: 'Submit Brief', href: '/brand/briefs/new', icon: PenLine },
     { label: 'My Briefs', href: '/brand/briefs', icon: Inbox },
   ],
 }
