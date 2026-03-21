@@ -452,3 +452,19 @@ Public:
 - lib/utils.ts
 
 **Issues found**: None. No fixes were required.
+
+---
+
+## 2026-03-20 — fix/brand-brief-route
+**Type**: Bug fix
+**Branch**: fix/brand-brief-route
+
+**Root cause**: URL routing conflict between `app/(agency)/briefs/[id]/page.tsx` and `app/(brand)/briefs/new/page.tsx`. Both resolved to `/briefs/new`. Next.js served the agency dynamic route (`[id]="new"`), which immediately called `notFound()` because no brief with id="new" exists. The brand manager Submit Brief form was never rendered.
+
+**Fix**:
+- Moved `app/(brand)/briefs/new/page.tsx` → `app/(brand)/brand/briefs/new/page.tsx` (new URL: `/brand/briefs/new`)
+- Updated `components/layout/Sidebar.tsx`: brand_manager Submit Brief href `/briefs/new` → `/brand/briefs/new`
+- Updated `components/layout/RoleSwitcher.tsx`: brand_manager home route `/briefs/new` → `/brand/briefs/new`
+- Removed now-empty `app/(brand)/briefs/` directories
+
+**Result**: `/brand/briefs/new` serves the SubmitBriefForm correctly under the brand layout; no conflict with agency `/briefs/*` routes.

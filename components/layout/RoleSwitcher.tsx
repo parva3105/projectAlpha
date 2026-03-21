@@ -13,7 +13,7 @@ import {
 const ROLE_HOME_ROUTES: Record<Role, string> = {
   agency: '/dashboard',
   creator: '/creator/deals',
-  brand_manager: '/briefs/new',
+  brand_manager: '/brand/briefs/new',
 }
 
 export function RoleSwitcher() {

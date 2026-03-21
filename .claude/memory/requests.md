@@ -121,3 +121,11 @@ Dragging cards to PENDING_APPROVAL or LIVE columns shows an error toast. Users m
 ### Partnership Request dialog — no role check in Phase 1
 In Phase 1, the "Send Partnership Request" button is always visible on /creators/[handle].
 Phase 3: restrict to agency role only.
+
+---
+
+## [DONE] Phase 1: /brand/briefs/new routing conflict
+**Type**: Bug fix
+**Priority**: P1 (blocker)
+**What**: Brand manager "Submit Brief" page at `/briefs/new` was silently routed to the agency `briefs/[id]` dynamic route (id="new"), returning 404. Fixed by moving the brand route to `/brand/briefs/new` which has no overlap with any agency route.
+**Status**: [DONE] — fix/brand-brief-route (2026-03-20)
