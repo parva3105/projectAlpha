@@ -3,6 +3,46 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-21 — revamp/phase-3: Auth + Superadmin + Email + Polish
+**Type**: Feature
+**Branch**: revamp/phase-3
+
+### What changed
+- **Real Clerk auth wired**: Replaced all `lib/auth-helpers.ts` calls (`getAgencyClerkId` etc.) with `requireAgencyAuth()` / `requireCreatorAuth()` / `requireBrandAuth()` in 7 remaining API routes. `lib/auth-helpers.ts` deleted. `lib/auth.ts` is now canonical.
+- **Superadmin perspective switcher**: `RoleSwitcher.tsx` rebuilt as Clerk-based, superadmin-only (renders null for real users). Reads/writes `active_perspective` cookie instead of localStorage. Lazy state init avoids setState-in-effect.
+- **ClerkProvider**: Added to `app/layout.tsx`; `RoleProvider` and `lib/role-context.tsx` deleted.
+- **Header.tsx**: Now uses `useUser()` from Clerk; shows real user name and role-derived title.
+- **Auth pages**: `/login`, `/signup`, `/signup/{agency,creator,brand}`, `/signup/complete` all built.
+- **Email**: 8 remaining React Email templates created (`changes-requested`, `content-approved`, `payment-received`, `deadline-warning`, `partnership-request`, `partnership-accepted`, `partnership-declined`, `new-brief`). Fire-and-forget email triggers wired to 10 API events via Trigger.dev `sendEmailJob`.
+- **Upload rate limiting**: `uploadRateLimit` applied to `POST /api/v1/deals/[id]/submissions`.
+- **Polish**: Empty states on all 5 agency list pages; `loading.tsx` + `error.tsx` on all 3 authenticated route groups.
+- **Smoke tests**: `e2e/smoke.spec.ts` (3 tests) + `e2e/helpers/auth.ts` perspective helpers.
+- **CI/CD**: Clerk env vars added to `ci.yml` + `prod.yml` quality job.
+
+### Quality gates
+- `npm run typecheck` → 0 errors
+- `npm run lint` → 0 errors (14 warnings, all pre-existing)
+- `npm run test` → 119/119 passing
+- `npm run build` → ✓ successful (all routes compile)
+
+---
+
+## 2026-03-21 — revamp/phase-3: DevOps & Smoke Tests
+**Type**: DevOps / CI
+**Branch**: revamp/phase-3
+
+### What changed
+- **`.github/workflows/ci.yml`**: Added `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` from GitHub secrets to the `ci` job `env:` block so the Next.js build can resolve Clerk imports during type-check and build steps.
+- **`.github/workflows/prod.yml`**: Same two Clerk env vars added to the `quality` job `env:` block for parity on every push to master.
+- **`e2e/helpers/auth.ts`** (new): Cookie-based perspective helpers (`setAgencyPerspective`, `setCreatorPerspective`, `setBrandPerspective`) for superadmin bypass in Playwright tests.
+- **`e2e/smoke.spec.ts`** (new): 3 API-layer smoke tests — full deal lifecycle route shape, brief submission endpoint shape, public discovery routes. Tests accept 401 on protected routes in CI (correct secure behavior) and assert `{ data, error }` response contract.
+- **`playwright.config.ts`**: No changes needed — `testDir: './e2e'` already set; `baseURL` driven by `PLAYWRIGHT_BASE_URL` env var (defaults to Vercel deployment URL).
+
+### Rationale
+Phase 3 introduced real Clerk auth. CI was missing Clerk keys, causing build failures when Clerk modules initialise during the Next.js build. Full Playwright sign-in flow tests are deferred to M8 (require Clerk test mode); API-layer smoke tests cover critical path contracts without email-verification dependency.
+
+---
+
 ## 2026-03-20 — revamp/phase-2: Backend Integration
 **Type**: Feature
 **Branch**: revamp/phase-2
@@ -492,3 +532,118 @@ Public:
 - Removed now-empty `app/(brand)/briefs/` directories
 
 **Result**: `/brand/briefs/new` serves the SubmitBriefForm correctly under the brand layout; no conflict with agency `/briefs/*` routes.
+
+---
+
+## 2026-03-20 — revamp/phase-3: proxy.ts and lib/auth.ts
+**Type**: DevOps / Infrastructure
+**Branch**: revamp/phase-3
+
+### What changed
+- Wrote `proxy.ts` at repo root — Clerk middleware replacing any prior middleware file. Implements public route bypass, unauthenticated redirect to `/login`, no-role redirect to `/signup/complete`, superadmin bypass, and ordered role guards (brand check before agency check to prevent `/brand/briefs/new` being caught by `/briefs(.*)` agency matcher).
+- Wrote `lib/auth.ts` — four async auth guard helpers (`requireAgencyAuth`, `requireCreatorAuth`, `requireBrandAuth`, `requireAnyAuth`). Each returns `AuthResult`; `AuthFail.response` typed as `Response` (satisfied by `NextResponse` from `lib/api-response.ts`). `superadmin` role substitutes seeded test Clerk IDs for each role.
+
+### Why
+Phase 3 infrastructure baseline — middleware and server-side auth guards required before any new API routes or protected pages can be wired up safely.
+
+---
+
+## 2026-03-20 — revamp/phase-3: Auth Pages
+**Type**: Feature
+**Branch**: revamp/phase-3
+
+### What changed
+- Created `app/(public)/login/page.tsx` — renders Clerk `<SignIn>` with `routing="hash"`
+- Created `app/(public)/signup/page.tsx` — role picker with 3 shadcn Cards (Agency, Creator, Brand Manager) linking to role-specific signup routes
+- Created `app/(public)/signup/agency/page.tsx` — Clerk `<SignUp>` with `unsafeMetadata={{ role: 'agency' }}`
+- Created `app/(public)/signup/creator/page.tsx` — Clerk `<SignUp>` with `unsafeMetadata={{ role: 'creator' }}`
+- Created `app/(public)/signup/brand/page.tsx` — Clerk `<SignUp>` with `unsafeMetadata={{ role: 'brand_manager' }}`
+- Created `app/(public)/signup/complete/page.tsx` — `'use client'` page; reads `unsafeMetadata.role`, calls `/api/v1/auth/set-role`, reloads session, then redirects to the role home route (`/dashboard`, `/creator/deals`, or `/brand/briefs/new`)
+- Created `app/api/v1/auth/set-role/route.ts` — POST endpoint; validates role enum via Zod, applies `authRateLimit`, calls `clerkClient().users.updateUserMetadata` to write `publicMetadata.role`
+
+### Why
+Phase 3 auth shell: users can now register under a role, have that role persisted in Clerk public metadata, and be redirected to the correct role-scoped area of the app.
+
+### Notes
+- `lib/rate-limit.ts` (exporting `authRateLimit`) is a backend dependency to be created separately
+- `set-role` route is in `app/api/v1/` — backend agent owns it; frontend agent wrote it per task spec
+
+---
+
+## 2026-03-21 — revamp/phase-3: Frontend Clerk Integration & UX Improvements
+**Type**: Frontend
+**Branch**: revamp/phase-3
+
+### What changed
+- `app/layout.tsx`: Replaced `<RoleProvider>` with `<ClerkProvider>` from `@clerk/nextjs`. Moved `<Toaster>` inside `<body>` as sibling to `{children}` (ClerkProvider wraps the html element now).
+- `components/layout/Header.tsx`: Removed `useRole()` from `lib/role-context`. Now uses `useUser()` from `@clerk/nextjs`. Derives role title from `user?.publicMetadata?.role` with fallback to `'agency'`. Shows computed initials from `user?.fullName ?? user?.firstName` instead of hardcoded "AG".
+- `components/layout/RoleSwitcher.tsx`: Full replacement. Now reads `active_perspective` cookie (not localStorage). Only renders for `superadmin` role. Uses `useUser()` from Clerk. Writes cookie on perspective change and navigates to role home.
+- `components/layout/Sidebar.tsx`: Removed `import type { Role } from '@/lib/role-context'`. Inlined `type Role = 'agency' | 'creator' | 'brand_manager'` to break the dependency.
+- `lib/role-context.tsx`: Deleted. No longer needed — Clerk is the source of truth for auth/role.
+- `components/__tests__/foundation.test.tsx`: Removed the `RoleProvider` describe block that imported from `lib/role-context`.
+- `app/(agency)/dashboard/page.tsx`: Added empty state when `deals.length === 0`.
+- `app/(agency)/deals/page.tsx`: Added empty state when `deals.length === 0`.
+- `app/(agency)/roster/page.tsx`: Added empty state when `creators.length === 0`.
+- `app/(agency)/brands/page.tsx`: Added empty state when `brands.length === 0`.
+- `app/(agency)/briefs/page.tsx`: Added empty state when `briefs.length === 0`.
+- `app/(agency)/loading.tsx`: Created — Skeleton loading fallback for agency route group.
+- `app/(creator)/loading.tsx`: Created — Skeleton loading fallback for creator route group.
+- `app/(brand)/loading.tsx`: Created — Skeleton loading fallback for brand route group.
+- `app/(agency)/error.tsx`: Created — Error boundary for agency route group.
+- `app/(creator)/error.tsx`: Created — Error boundary for creator route group.
+- `app/(brand)/error.tsx`: Created — Error boundary for brand route group.
+- `components/ui/skeleton.tsx`: Created — shadcn Skeleton component (was missing from components/ui/).
+
+### Pre-existing issues (not introduced by this session)
+- `app/api/v1/briefs/route.ts` and `app/api/v1/partnerships/*.ts` import missing email templates (`emails/new-brief`, `emails/partnership-request`, `emails/partnership-accepted`, `emails/partnership-declined`). These are backend-owned files outside frontend scope.
+
+### Why
+Phase 3 frontend: migrate from mock `RoleProvider` to real Clerk auth, add route-group loading/error boundaries, add empty states for all agency list pages.
+
+## 2026-03-21 — revamp/phase-3: Backend — Auth migration, email templates, email wiring
+**Type**: Backend integration
+**Branch**: revamp/phase-3
+
+### What changed
+
+**Task 1 — Auth migration (eliminated lib/auth-helpers.ts)**
+- `app/api/v1/roster/route.ts`: POST handler now calls `requireAgencyAuth()` (was `getAgencyClerkId()`).
+- `app/api/v1/briefs/route.ts`: GET uses `requireAgencyAuth()`; POST uses `requireBrandAuth()`. Both imported from `@/lib/auth`. Old `auth-helpers` import removed.
+- `app/api/v1/briefs/[id]/route.ts`: GET and PATCH both use `requireAgencyAuth()`. Old `auth-helpers` import removed.
+- `app/api/v1/brands/[id]/route.ts`: GET uses `requireAgencyAuth()` (scopes deal listing to agency); PATCH now also calls `requireAgencyAuth()` (previously had no auth guard on PATCH). Old `auth-helpers` import removed.
+- `app/api/v1/deals/[id]/submissions/route.ts`: POST uses `requireCreatorAuth()` (was `getCreatorClerkId()`). Old `auth-helpers` import removed.
+- `app/api/v1/partnerships/route.ts`: POST uses `requireAgencyAuth()`. Old `auth-helpers` import removed.
+- `app/api/v1/partnerships/[id]/route.ts`: PATCH uses `requireCreatorAuth()` — creator responds to their own partnership request; lookup changed from `{ id, agencyClerkId }` to `{ id, creatorId: creator.id }` to match ownership model. Old `auth-helpers` import removed.
+- `lib/auth-helpers.ts`: **Deleted**.
+
+**Task 2 — 8 new email templates (emails/)**
+- `emails/changes-requested.tsx`: Props `{ dealTitle, creatorName, feedback? }`. Renders optional feedback block.
+- `emails/content-approved.tsx`: Props `{ dealTitle, creatorName }`.
+- `emails/payment-received.tsx`: Props `{ dealTitle, creatorName, amount? }`.
+- `emails/deadline-warning.tsx`: Props `{ dealTitle, deadline }`.
+- `emails/partnership-request.tsx`: Props `{ creatorName, agencyName? }`.
+- `emails/partnership-accepted.tsx`: Props `{ creatorName }`.
+- `emails/partnership-declined.tsx`: Props `{ creatorName }`.
+- `emails/new-brief.tsx`: Props `{ brandName, campaignName }`.
+All templates use `@react-email/components` pattern matching existing templates.
+
+**Task 3 — Upload rate limiting**
+- `app/api/v1/deals/[id]/submissions/route.ts` POST: `uploadRateLimit.limit(creatorClerkId)` called after auth, returns 429 on exceed.
+
+**Task 4 — Email triggers wired (all fire-and-forget)**
+- `deals/[id]/route.ts` PATCH: triggers `deal-assigned` when `creatorId` set; triggers `contract-available` when `contractStatus === 'SENT'`.
+- `deals/[id]/submissions/route.ts` POST: triggers `content-submitted` to agency placeholder.
+- `deals/[id]/submissions/[sid]/route.ts` PATCH: triggers `content-approved` on APPROVED; triggers `changes-requested` on CHANGES_REQUESTED.
+- `deals/[id]/stage/route.ts` POST: triggers `payment-received` when stage advances to `PAYMENT_PENDING`.
+- `partnerships/route.ts` POST: triggers `partnership-request` to creator placeholder.
+- `partnerships/[id]/route.ts` PATCH: triggers `partnership-accepted` or `partnership-declined` to agency placeholder.
+- `briefs/route.ts` POST: triggers `new-brief` to agency placeholder.
+
+### Bug fixed during implementation
+- `deals/[id]/route.ts`: contractStatus comparison was `=== 'Sent'` (from task description example) but Prisma enum is `'SENT'`. Corrected to `=== 'SENT'` — confirmed via `prisma/schema.prisma` and `lib/validations/deal.ts`.
+
+### Pre-existing TS errors (not introduced by this session)
+- `app/(public)/signup/page.tsx`: `asChild` prop on Button (frontend agent domain).
+- `components/layout/RoleSwitcher.tsx`: Select `onValueChange` null type (frontend agent domain).
+
+---

@@ -3,7 +3,8 @@ import { CreatorDirectory } from '@/components/creator/CreatorDirectory'
 
 export default async function DiscoverPage() {
   const res = await fetch(apiUrl('/api/v1/creators'), { cache: 'no-store' })
-  const { data: creators } = await res.json()
+  const { data } = await res.json()
+  const creators = data?.creators ?? []
 
   return (
     <div className="p-6">

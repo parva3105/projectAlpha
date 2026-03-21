@@ -1,15 +1,22 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { ok, badRequest, forbidden, notFound, unprocessable } from '@/lib/api-response'
-import { getAgencyClerkId } from '@/lib/auth-helpers' // TODO(phase3): replace with real Clerk auth()
+import { requireAgencyAuth } from '@/lib/auth'
 import { UpdateDealSchema } from '@/lib/validations/deal'
+import { sendEmailJob } from '@/jobs/send-email'
+import { renderEmailToHtml } from '@/lib/email'
+import DealAssignedEmail from '@/emails/deal-assigned'
+import ContractAvailableEmail from '@/emails/contract-available'
+import React from 'react'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
 
   const deal = await db.deal.findFirst({
     where: { id, agencyClerkId },
@@ -30,7 +37,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
 
   const existing = await db.deal.findFirst({ where: { id, agencyClerkId } })
   if (!existing) return notFound()
@@ -79,6 +88,44 @@ export async function PATCH(
     },
   })
 
+  // Fire-and-forget emails based on what changed
+  if (input.creatorId) {
+    const creatorName = deal.creator?.name ?? 'Creator'
+    const agencyName = deal.brand?.name ?? 'Your agency'
+    void renderEmailToHtml(
+      React.createElement(DealAssignedEmail, {
+        dealTitle: deal.title,
+        creatorName,
+        agencyName,
+      })
+    ).then((html) =>
+      sendEmailJob.trigger({
+        to: `${input.creatorId}@placeholder.dev`,
+        subject: `Deal assigned: ${deal.title}`,
+        html,
+      })
+    )
+  }
+
+  if (input.contractStatus === 'SENT') {
+    const recipientClerkId = input.creatorId ?? existing.creatorId
+    const creatorName = deal.creator?.name ?? 'Creator'
+    if (recipientClerkId) {
+      void renderEmailToHtml(
+        React.createElement(ContractAvailableEmail, {
+          dealTitle: deal.title,
+          creatorName,
+        })
+      ).then((html) =>
+        sendEmailJob.trigger({
+          to: `${recipientClerkId}@placeholder.dev`,
+          subject: `Contract ready: ${deal.title}`,
+          html,
+        })
+      )
+    }
+  }
+
   return ok(serializeDeal(deal))
 }
 
@@ -87,7 +134,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
 
   const deal = await db.deal.findFirst({ where: { id, agencyClerkId } })
   if (!deal) return notFound()

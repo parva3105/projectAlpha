@@ -1,11 +1,13 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { ok, created, badRequest, unprocessable } from '@/lib/api-response'
-import { getAgencyClerkId } from '@/lib/auth-helpers' // TODO(phase3): replace with real Clerk auth()
+import { requireAgencyAuth } from '@/lib/auth'
 import { CreateDealSchema } from '@/lib/validations/deal'
 
 export async function GET(req: NextRequest) {
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
   const { searchParams } = req.nextUrl
 
   const stage = searchParams.get('stage') ?? undefined
@@ -36,7 +38,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
 
   let body: unknown
   try {

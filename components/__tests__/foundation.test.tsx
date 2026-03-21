@@ -244,38 +244,3 @@ describe('mockBriefs', () => {
   })
 })
 
-// ── RoleProvider — context behavior ──────────────────────────────────────
-
-import { RoleProvider, useRole } from '@/lib/role-context'
-
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, val: string) => { store[key] = val },
-    clear: () => { store = {} },
-  }
-})()
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-
-function RoleDisplay() {
-  const { role } = useRole()
-  return <div data-testid="role">{role}</div>
-}
-
-describe('RoleProvider', () => {
-  beforeEach(() => {
-    localStorageMock.clear()
-  })
-
-  it('provides the default role "agency"', () => {
-    render(
-      <RoleProvider>
-        <RoleDisplay />
-      </RoleProvider>
-    )
-    expect(screen.getByTestId('role').textContent).toBe('agency')
-  })
-})

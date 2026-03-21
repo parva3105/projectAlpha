@@ -3,6 +3,20 @@ _Append only. Never delete entries._
 
 ---
 
+## 2026-03-21 — revamp/phase-3: Superadmin role design
+**Decision**: Added `superadmin` as a 4th valid role in Clerk `publicMetadata`. Superadmin bypasses all `proxy.ts` role-based routing. `requireAgencyAuth()` / `requireCreatorAuth()` / `requireBrandAuth()` return fixed test IDs (`test_agency_001` etc.) instead of `forbidden()` when role is `superadmin`. Perspective cookie (`active_perspective`) controls which portal UI renders and which home route `RoleSwitcher` navigates to. `RoleSwitcher` renders `null` for non-superadmin users — invisible to real users.
+**Reason**: Single dev/QA account for testing all 3 role perspectives without logging in/out. Never visible to real agency/creator/brand users.
+
+## 2026-03-21 — revamp/phase-3: lib/auth.ts replaces lib/auth-helpers.ts
+**Decision**: `auth-helpers.ts` (hardcoded test IDs) deleted. `lib/auth.ts` is the canonical auth module for all API routes. All routes use the `requireXAuth()` pattern: returns `{ ok: true, userId }` or `{ ok: false, response }`. Caller returns `authResult.response` immediately on failure.
+**Reason**: Phase 2 deliberately deferred real auth; Phase 3 activates it. The pattern is consistent and type-safe — no exceptions thrown, no Response thrown, just a discriminated union.
+
+## 2026-03-21 — revamp/phase-3: Email sends are always async via Trigger.dev
+**Decision**: Never `await` email sends in API route hot paths. Always use `void sendEmailJob.trigger(...)` (fire-and-forget). Creator email recipient uses `${creatorClerkId}@placeholder.dev` for MVP (Creator model has no `email` field per REQ-M2-001).
+**Reason**: Email delivery latency must not block API responses. Placeholder email is acceptable for MVP since Resend will bounce silently; real email lookup via Clerk API is a post-MVP improvement.
+
+---
+
 ## 2026-03-20 — revamp/phase-2: Hardcoded auth IDs (no Clerk)
 **Decision**: Phase 2 uses hardcoded `test_agency_001`, `test_brand_001`, `test_creator_001` ClerkIDs in `lib/auth-helpers.ts`. No Clerk imports anywhere in Phase 2 code.
 **Reason**: Eliminates auth service dependency during backend integration sprint; allows full API + DB testing without live Clerk session. All functions are tagged `// TODO(phase3): replace with real Clerk auth()`.
@@ -278,3 +292,17 @@ Why: Found during P1-2/P1-3 implementation. All interactive components updated a
 ### Zod v4 form validation
 Decision: For forms with number inputs, use plain react-hook-form register() instead of zod coerce.number() to avoid type mismatch with @hookform/resolvers in Zod v4.
 Why: z.coerce.number() resolver type inference changed in Zod v4, causing TypeScript errors.
+
+## 2026-03-21 — Creator placeholder email for all email triggers
+**Decision**: All email sends to a creator use `${creatorClerkId}@placeholder.dev` as the recipient address. All email sends to an agency use `${agencyClerkId}@placeholder.dev`.
+**Reason**: The Creator and Agency models have no `email` field in the MVP schema. Placeholder addresses ensure the trigger.dev job fires and can be tested end-to-end without a real email column. Real addresses require a schema migration (database agent concern).
+**When to revisit**: Add `Creator.email` and `Agency.email` fields in a future migration, then update all `@placeholder.dev` references in route handlers.
+
+---
+
+## 2026-03-21 — partnerships/[id]/route.ts: creator auth, not agency auth
+**Decision**: `PATCH /partnerships/[id]` uses `requireCreatorAuth()`. The creator looks up their own `Creator` record by `clerkId`, then verifies the partnership request belongs to them via `{ id, creatorId: creator.id }`.
+**Reason**: Partnership accept/decline is a creator action, not an agency action. The original phase-2 stub used `agencyClerkId` to scope the lookup (incorrect — agencies create requests, creators respond to them). Corrected in phase-3 migration.
+**Alternatives considered**: Keeping agency auth and adding a separate creator endpoint (rejected — unnecessary duplication; PATCH on the same resource by the responding party is RESTful).
+
+---
