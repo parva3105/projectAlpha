@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { apiUrl } from '@/lib/api'
+import { serverFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -36,7 +36,7 @@ export default async function BrandDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const res = await fetch(apiUrl(`/api/v1/brands/${id}`), { cache: 'no-store' })
+  const res = await serverFetch(`/api/v1/brands/${id}`, { cache: 'no-store' })
   if (!res.ok) notFound()
   const { data: brand } = await res.json()
   if (!brand) notFound()
