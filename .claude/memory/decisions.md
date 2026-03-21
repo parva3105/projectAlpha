@@ -3,6 +3,27 @@ _Append only. Never delete entries._
 
 ---
 
+## 2026-03-20 — revamp/phase-2: Hardcoded auth IDs (no Clerk)
+**Decision**: Phase 2 uses hardcoded `test_agency_001`, `test_brand_001`, `test_creator_001` ClerkIDs in `lib/auth-helpers.ts`. No Clerk imports anywhere in Phase 2 code.
+**Reason**: Eliminates auth service dependency during backend integration sprint; allows full API + DB testing without live Clerk session. All functions are tagged `// TODO(phase3): replace with real Clerk auth()`.
+**Alternatives considered**: Mock Clerk session (rejected — more complex, still blocks headless testing).
+
+---
+
+## 2026-03-20 — revamp/phase-2: Monetary convention (cents stored, dollars returned)
+**Decision**: DB stores all monetary values as `Decimal(10,2)` in cents (e.g., $35 → `3500`). API responses divide by 100 before returning (dollars). `creatorPayout` is always server-computed: `Math.round(dealValueCents * (1 - commissionPct/100))`.
+**Reason**: Standard financial precision practice; existing frontend components expect dollar values (e.g., `deal.dealValue.toLocaleString()`); no frontend display changes needed.
+**Alternatives considered**: Store and return cents everywhere (rejected — requires frontend display changes).
+
+---
+
+## 2026-03-20 — revamp/phase-2: Brief→Deal conversion placeholder brand
+**Decision**: `PATCH /briefs/[id]` with `status: CONVERTED` creates a Deal with a placeholder "Unassigned" brand if no `brandId` is present on the brief. Agency is expected to update `brandId` after conversion.
+**Reason**: DB `Deal.brandId` is a required FK. Brief has no `brandId` field. Placeholder avoids blocking the conversion workflow.
+**Alternatives considered**: Make `Deal.brandId` nullable (rejected — too many downstream changes to schema + components).
+
+---
+
 ## 2026-03-20 — revamp/phase-1: Mock data over real API calls
 **Decision**: Phase 1 uses static mock data in `lib/mock/` with no API calls, no Clerk, no Prisma.
 **Reason**: Allows rapid UI iteration without backend service dependencies; all values use dollars (not cents) for Phase 1 display simplicity; Prisma enums replaced with string literals throughout client code.

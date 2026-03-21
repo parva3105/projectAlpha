@@ -1,9 +1,6 @@
 import { notFound } from 'next/navigation'
-import { mockDeals } from '@/lib/mock/deals'
-import { mockSubmissions } from '@/lib/mock/submissions'
+import { apiUrl } from '@/lib/api'
 import { CreatorDealDetail } from '@/components/creator/CreatorDealDetail'
-
-const MOCK_CREATOR_ID = 'creator_001'
 
 export default async function CreatorDealDetailPage({
   params,
@@ -11,12 +8,13 @@ export default async function CreatorDealDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const deal = mockDeals.find(d => d.id === id && d.creatorId === MOCK_CREATOR_ID)
+  const res = await fetch(apiUrl(`/api/v1/deals/${id}`), { cache: 'no-store' })
+  if (!res.ok) notFound()
+  const { data: deal } = await res.json()
   if (!deal) notFound()
-  const submissions = mockSubmissions.filter(s => s.dealId === id)
   return (
     <div className="p-6">
-      <CreatorDealDetail initialDeal={deal} initialSubmissions={submissions} />
+      <CreatorDealDetail initialDeal={deal} initialSubmissions={deal.submissions ?? []} />
     </div>
   )
 }

@@ -1,12 +1,14 @@
-import { mockCreators } from '@/lib/mock/creators'
+import { apiUrl } from '@/lib/api'
 import { CreatorDirectory } from '@/components/creator/CreatorDirectory'
 
-export default function DiscoverPage() {
-  const publicCreators = mockCreators.filter(c => c.isPublic)
+export default async function DiscoverPage() {
+  const res = await fetch(apiUrl('/api/v1/creators'), { cache: 'no-store' })
+  const { data: creators } = await res.json()
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold tracking-tight mb-6">Discover Creators</h1>
-      <CreatorDirectory creators={publicCreators} />
+      <CreatorDirectory creators={creators ?? []} />
     </div>
   )
 }

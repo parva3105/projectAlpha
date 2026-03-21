@@ -1,10 +1,8 @@
-import { mockDeals } from '@/lib/mock/deals'
+import { apiUrl } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { isOverdue } from '@/lib/overdue.client'
-
-const MOCK_CREATOR_ID = 'creator_001'
 
 const STAGE_LABELS: Record<string, string> = {
   BRIEF_RECEIVED: 'Brief Received',
@@ -17,8 +15,10 @@ const STAGE_LABELS: Record<string, string> = {
   CLOSED: 'Closed',
 }
 
-export default function CreatorDealsPage() {
-  const myDeals = mockDeals.filter(d => d.creatorId === MOCK_CREATOR_ID)
+export default async function CreatorDealsPage() {
+  const res = await fetch(apiUrl('/api/v1/deals?creatorId=creator_seed_001'), { cache: 'no-store' })
+  const { data } = await res.json()
+  const myDeals = data ?? []
 
   if (myDeals.length === 0) {
     return (
@@ -32,7 +32,7 @@ export default function CreatorDealsPage() {
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold tracking-tight">My Deals</h1>
       <div className="grid gap-4">
-        {myDeals.map(deal => (
+        {(myDeals as Array<{ id: string; brand: { name: string }; title: string; stage: string; deadline: string; creatorPayout: number }>).map(deal => (
           <Link key={deal.id} href={`/creator/deals/${deal.id}`}>
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
               <CardContent className="pt-6">

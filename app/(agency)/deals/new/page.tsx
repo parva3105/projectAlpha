@@ -1,12 +1,18 @@
-import { mockBrands } from '@/lib/mock/brands'
-import { mockRoster } from '@/lib/mock/creators'
+import { apiUrl } from '@/lib/api'
 import { DealNewForm } from '@/components/forms/DealNewForm'
 
-export default function NewDealPage() {
+export default async function NewDealPage() {
+  const [brandsRes, rosterRes] = await Promise.all([
+    fetch(apiUrl('/api/v1/brands'), { cache: 'no-store' }),
+    fetch(apiUrl('/api/v1/roster'), { cache: 'no-store' }),
+  ])
+  const { data: brands } = await brandsRes.json()
+  const { data: creators } = await rosterRes.json()
+
   return (
     <div className="p-6 max-w-2xl">
       <h1 className="text-2xl font-bold mb-6 tracking-tight">New Deal</h1>
-      <DealNewForm brands={mockBrands} creators={mockRoster} />
+      <DealNewForm brands={brands ?? []} creators={creators ?? []} />
     </div>
   )
 }
