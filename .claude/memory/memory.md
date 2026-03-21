@@ -9,9 +9,9 @@ _Last updated: 2026-03-20_
 - Phase 1 complete: 2026-03-20 — all 18 routes with mock data, no DB, no Clerk
 
 ## Current state
-- Status: **Phase 2 Backend Integration complete — ready for PR review**
-- Branch: revamp/phase-2 (off revamp/phase-1)
-- Active milestone: Phase 2 — Backend Integration ✅ complete
+- Status: **Phase 3 Auth + Superadmin + Polish complete — ready for PR review**
+- Branch: revamp/phase-3 (off master)
+- Active milestone: Phase 3 — Auth + Superadmin ✅ complete
 
 ## Pre-M3 fixes in progress — 2 PRs open
 - **PR #8** `fix/pre-m3-proxy-loop` — proxy.ts redirect loop guard (stale JWT)

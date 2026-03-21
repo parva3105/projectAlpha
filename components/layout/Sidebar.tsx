@@ -12,7 +12,8 @@ import {
   PenLine,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Role } from '@/lib/role-context'
+
+type Role = 'agency' | 'creator' | 'brand_manager'
 
 type NavItem = {
   label: string

@@ -1,8 +1,13 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { ok, created, badRequest, notFound, unprocessable } from '@/lib/api-response'
-import { getCreatorClerkId } from '@/lib/auth-helpers' // TODO(phase3): replace with real Clerk auth()
+import { ok, created, badRequest, notFound, unprocessable, err } from '@/lib/api-response'
+import { requireCreatorAuth } from '@/lib/auth'
+import { uploadRateLimit } from '@/lib/rate-limit'
 import { CreateSubmissionSchema } from '@/lib/validations/submission'
+import { sendEmailJob } from '@/jobs/send-email'
+import { renderEmailToHtml } from '@/lib/email'
+import ContentSubmittedEmail from '@/emails/content-submitted'
+import React from 'react'
 
 export async function GET(
   _req: NextRequest,
@@ -28,11 +33,18 @@ export async function POST(
 ) {
   const { id } = await params
 
+  const authResult = await requireCreatorAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: creatorClerkId } = authResult
+
+  // Upload rate limiting: 5 submissions per minute per creator
+  const { success } = await uploadRateLimit.limit(creatorClerkId)
+  if (!success) return err('Rate limit exceeded. Please wait before submitting again.', 429)
+
   const deal = await db.deal.findUnique({ where: { id } })
   if (!deal) return notFound()
 
   // Resolve the creator by their Clerk ID
-  const creatorClerkId = getCreatorClerkId() // TODO(phase3): replace with real Clerk auth()
   const creator = await db.creator.findUnique({ where: { clerkId: creatorClerkId } })
   if (!creator) return notFound('Creator profile not found')
 
@@ -70,6 +82,21 @@ export async function POST(
       data: { stage: 'PENDING_APPROVAL' },
     }),
   ])
+
+  // Fire-and-forget: notify agency that content was submitted
+  void renderEmailToHtml(
+    React.createElement(ContentSubmittedEmail, {
+      dealTitle: deal.title,
+      creatorName: creator.name,
+      round: nextRound,
+    })
+  ).then((html) =>
+    sendEmailJob.trigger({
+      to: `${deal.agencyClerkId}@placeholder.dev`,
+      subject: `Content submitted for: ${deal.title}`,
+      html,
+    })
+  )
 
   return created(submission)
 }

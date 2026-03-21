@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { ok, badRequest, notFound, unprocessable } from '@/lib/api-response'
-import { getAgencyClerkId } from '@/lib/auth-helpers' // TODO(phase3): replace with real Clerk auth()
+import { requireAgencyAuth } from '@/lib/auth'
 import { UpdateBrandSchema } from '@/lib/validations/brand'
 
 export async function GET(
@@ -9,7 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
 
   const brand = await db.brand.findUnique({
     where: { id },
@@ -44,6 +46,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
 
   const existing = await db.brand.findUnique({ where: { id } })
   if (!existing) return notFound()

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { ok, badRequest, notFound } from '@/lib/api-response'
-import { getAgencyClerkId } from '@/lib/auth-helpers' // TODO(phase3): replace with real Clerk auth()
+import { requireAgencyAuth } from '@/lib/auth'
 import { getPreviousStage } from '@/lib/stage-transitions'
 
 export async function POST(
@@ -9,7 +9,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
 
   const deal = await db.deal.findFirst({ where: { id, agencyClerkId } })
   if (!deal) return notFound()

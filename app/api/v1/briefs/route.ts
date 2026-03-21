@@ -1,11 +1,18 @@
 import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { ok, created, badRequest, unprocessable } from '@/lib/api-response'
-import { getAgencyClerkId, getBrandClerkId } from '@/lib/auth-helpers' // TODO(phase3): replace with real Clerk auth()
+import { requireAgencyAuth, requireBrandAuth } from '@/lib/auth'
 import { CreateBriefSchema } from '@/lib/validations/brief'
+import { sendEmailJob } from '@/jobs/send-email'
+import { renderEmailToHtml } from '@/lib/email'
+import NewBriefEmail from '@/emails/new-brief'
+import React from 'react'
 
 export async function GET(req: NextRequest) {
-  const agencyClerkId = getAgencyClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireAgencyAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: agencyClerkId } = authResult
+
   const status = req.nextUrl.searchParams.get('status') ?? undefined
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,7 +29,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const brandManagerClerkId = getBrandClerkId() // TODO(phase3): replace with real Clerk auth()
+  const authResult = await requireBrandAuth()
+  if (!authResult.ok) return authResult.response
+  const { userId: brandManagerClerkId } = authResult
 
   let body: unknown
   try {
@@ -45,6 +54,20 @@ export async function POST(req: NextRequest) {
     },
     include: { creator: { select: { id: true, name: true, handle: true, avatarUrl: true } } },
   })
+
+  // Fire-and-forget: notify agency that a new brief was submitted
+  void renderEmailToHtml(
+    React.createElement(NewBriefEmail, {
+      brandName: brandManagerClerkId,
+      campaignName: brief.title,
+    })
+  ).then((html) =>
+    sendEmailJob.trigger({
+      to: `${brief.agencyClerkId ?? 'agency'}@placeholder.dev`,
+      subject: `New brief submitted: ${brief.title}`,
+      html,
+    })
+  )
 
   return created(serializeBrief(brief))
 }
