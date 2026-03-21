@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { ok, created, badRequest, notFound, unprocessable, err } from '@/lib/api-response'
 import { requireCreatorAuth } from '@/lib/auth'
-import { uploadRateLimit } from '@/lib/rate-limit'
+import { getUploadRateLimit } from '@/lib/rate-limit'
 import { CreateSubmissionSchema } from '@/lib/validations/submission'
 import { sendEmailJob } from '@/jobs/send-email'
 import { renderEmailToHtml } from '@/lib/email'
@@ -38,7 +38,7 @@ export async function POST(
   const { userId: creatorClerkId } = authResult
 
   // Upload rate limiting: 5 submissions per minute per creator
-  const { success } = await uploadRateLimit.limit(creatorClerkId)
+  const { success } = await getUploadRateLimit().limit(creatorClerkId)
   if (!success) return err('Rate limit exceeded. Please wait before submitting again.', 429)
 
   const deal = await db.deal.findUnique({ where: { id } })
