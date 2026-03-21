@@ -12,6 +12,7 @@ const isPublicRoute = createRouteMatcher([
   '/signup(.*)',
   '/api/v1/auth/complete(.*)',
   '/api/v1/auth/set-role(.*)',
+  '/api/v1/creators(.*)',   // public discovery — used by /discover and /creators/:handle
 ])
 
 // Brand manager — check BEFORE isAgencyRoute so /briefs/new isn't caught by agency matcher
