@@ -3,6 +3,20 @@ _Append only. Never delete entries._
 
 ---
 
+## 2026-03-20 — revamp/phase-1: Mock data over real API calls
+**Decision**: Phase 1 uses static mock data in `lib/mock/` with no API calls, no Clerk, no Prisma.
+**Reason**: Allows rapid UI iteration without backend service dependencies; all values use dollars (not cents) for Phase 1 display simplicity; Prisma enums replaced with string literals throughout client code.
+**Alternatives considered**: Keeping live API calls (rejected — Phase 1 is a clean-slate revamp, not patching M2 code).
+
+---
+
+## 2026-03-20 — revamp/phase-1: geist npm package over next/font/google
+**Decision**: Import Geist fonts via `geist/font/sans` and `geist/font/mono` (npm package), not `next/font/google`.
+**Reason**: The `geist` package self-hosts fonts (no external requests), ships correct variable declarations (`--font-geist-sans`, `--font-geist-mono`), and is the Vercel-recommended pattern per official docs.
+**Alternatives considered**: `next/font/google` (archive pattern) — still valid but requires network during build; self-hosting preferred.
+
+---
+
 ## 2026-03-18 — Framework: Next.js 16 App Router
 **Decision**: Use Next.js 16 with App Router.
 **Reason**: Multi-page routing needed, SSR for SEO on public creator directory (/discover, /creators/:handle), Server Components reduce client bundle, streaming support.
@@ -217,3 +231,29 @@ The following were evaluated and explicitly excluded from MVP. Do not reopen wit
 ## 2026-03-19 — Button asChild not available; use Link + buttonVariants()
 **Decision**: For anchor-styled buttons (links that look like buttons), use `Link` from `next/link` with `buttonVariants()` class applied directly — not `<Button asChild>`.
 **Reason**: The project's `components/ui/button.tsx` wraps `@base-ui/react/button`, which does not expose a Radix-style `asChild` prop. Applying `buttonVariants()` to a `Link` achieves the same visual result without the prop.
+
+---
+
+## 2026-03-20 — Phase 1 architectural decisions
+
+### RoleSwitcher context architecture
+Decision: RoleProvider wraps entire app in root layout. Sidebar accepts `role: Role` prop from each layout file (hardcoded per route group). RoleSwitcher reads/writes localStorage key "devRole" and calls router.push() to the role's home route on switch.
+Why: Separates layout concerns (each route group knows its role) from the dev tool concern (RoleSwitcher just updates localStorage + redirects).
+
+### Mock data uses dollars, not cents
+Decision: Phase 1 mock data stores dealValue, creatorPayout as plain dollar numbers (not cents). Display format: $X,XXX or $X,XXX.XX.
+Why: Simpler for UI-only phase. Phase 2 will switch to cents-as-integers matching Prisma schema.
+
+### Archive component adaptation
+Decision: Kanban, deal form, stage-control components ported from _archive/ with API calls removed. State management moved from server-sync to pure useState.
+Why: Prevents rewriting working drag-and-drop logic. The adapation is minimal (remove fetch, add toast + state update).
+
+### @base-ui/react vs Radix shadcn differences
+Decision: This project's shadcn install uses @base-ui/react under the hood, not Radix. This means:
+- `asChild` prop is not supported — use `render={<Component />}` pattern instead
+- Select.onValueChange receives `string | null`, not `string`
+Why: Found during P1-2/P1-3 implementation. All interactive components updated accordingly.
+
+### Zod v4 form validation
+Decision: For forms with number inputs, use plain react-hook-form register() instead of zod coerce.number() to avoid type mismatch with @hookform/resolvers in Zod v4.
+Why: z.coerce.number() resolver type inference changed in Zod v4, causing TypeScript errors.

@@ -1,10 +1,10 @@
-export default function NewBriefPage() {
+import { SubmitBriefForm } from '@/components/briefs/SubmitBriefForm'
+
+export default function SubmitBriefPage() {
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">Submit a Brief</h1>
-      <p className="text-sm text-muted-foreground">
-        Brief submission form — coming in M6.
-      </p>
+    <div className="p-6 max-w-2xl">
+      <h1 className="text-2xl font-bold tracking-tight mb-6">Submit a Brief</h1>
+      <SubmitBriefForm />
     </div>
-  );
+  )
 }

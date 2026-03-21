@@ -1,36 +1,24 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import { Toaster } from '@/components/ui/sonner'
+import { RoleProvider } from '@/lib/role-context'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "Brand Deal Manager",
-  description: "Influencer brand deal pipeline for talent agencies",
-};
+  title: 'Brand Deal Manager',
+  description: 'The agency-grade deal pipeline for influencer marketing',
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
-      <html
-        lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      >
-        <body className="min-h-full flex flex-col">{children}</body>
-      </html>
-    </ClerkProvider>
-  );
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} dark`}>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <RoleProvider>
+          {children}
+        </RoleProvider>
+        <Toaster />
+      </body>
+    </html>
+  )
 }

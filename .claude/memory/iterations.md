@@ -270,6 +270,109 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-20 — revamp/phase-1: P1-1 Foundation build (zero external deps)
+**Type**: Feature
+**Branch**: revamp/phase-1
+**What changed**:
+- Installed `geist` npm package (v1.x) — fonts imported via `geist/font/sans` and `geist/font/mono`
+- Ran `npx shadcn@latest add` to install 15 components: badge, button, card, checkbox, dialog, input, label, select, sheet, table, textarea, tooltip, separator, dropdown-menu, sonner
+- Created `app/globals.css` — Tailwind v4 + tw-animate-css + shadcn CSS variables; dark mode default (zinc/slate oklch palette)
+- Created `app/layout.tsx` — GeistSans + GeistMono variables on `<html dark>`; RoleProvider + Toaster; NO Clerk, NO Prisma
+- Created `lib/utils.ts` — `cn()` (clsx + tailwind-merge)
+- Created `lib/button-variants.ts` — `buttonVariants` cva definition (Server Component safe)
+- Created `lib/stage-transitions.client.ts` — STAGE_ORDER, SYSTEM_CONTROLLED_STAGES, STAGE_LABELS, isValidAdvance, getPreviousStage, getNextStage (all string literals, no Prisma import)
+- Created `lib/overdue.client.ts` — isOverdue() with string-based stage check
+- Created `lib/mock/creators.ts` — 5 MockCreator fixtures + mockRoster filter
+- Created `lib/mock/brands.ts` — 4 MockBrand fixtures
+- Created `lib/mock/deals.ts` — 8 MockDeal fixtures (one per pipeline stage)
+- Created `lib/mock/submissions.ts` — 3 MockSubmission fixtures
+- Created `lib/mock/briefs.ts` — 4 MockBrief fixtures
+- Created `lib/role-context.tsx` — RoleProvider + useRole() hook (localStorage persistence, default: agency)
+- Created `components/layout/RoleSwitcher.tsx` — shadcn Select, routes to role home on change
+- Created `components/layout/Sidebar.tsx` — role-aware nav with lucide-react icons + active state
+- Created `components/layout/Header.tsx` — role title + RoleSwitcher + avatar placeholder
+- Created `app/(agency)/layout.tsx`, `app/(creator)/layout.tsx`, `app/(brand)/layout.tsx` — Server Component shells
+- Created `app/(public)/page.tsx` + `app/(agency)/dashboard/page.tsx` — placeholder pages
+- Excluded `_archive/` from tsconfig.json to prevent stale type errors
+- Created `components/__tests__/foundation.test.tsx` — 37 Vitest tests covering cn, stage-transitions, overdue, all 5 mock datasets, and RoleProvider
+- All 37 tests pass ✅
+- `npm run typecheck` → zero errors ✅
+- `npm run build` → clean Turbopack build ✅
+
+---
+
+## 2026-03-20 — revamp/phase-1: P1-2 Agency Core Pages
+**Type**: Feature
+**Branch**: revamp/phase-1
+**What changed**:
+- Created `components/kanban/DealCard.tsx` — deal title, brand, creator (or "Unassigned"), platform badge, deadline, deal value formatted as $X,XXX.XX; Overdue badge via isOverdue(); wraps in Link to /deals/[id]
+- Created `components/kanban/DealDraggable.tsx` — useDraggable from @dnd-kit/core; CSS.Translate.toString transform; opacity 0.4 when dragging
+- Created `components/kanban/KanbanColumn.tsx` — useDroppable with isOver highlight; renders DealDraggable + DealCard per deal; empty state "No deals"; w-64 shrink-0
+- Created `components/kanban/KanbanFilters.tsx` — client-side filter state (platform, creatorId, brandId, overdueOnly); derives unique options from deals prop; notifies parent via onFilterChange callback using useEffect; @base-ui/react Select onValueChange receives string|null
+- Created `components/kanban/KanbanBoard.tsx` — DndContext with PointerSensor (distance:5); drag prevents system-controlled stages (toast.error); moves deal in local state on drop; DragOverlay with rotate+scale; renders KanbanFilters + STAGE_ORDER columns
+- Created `app/(agency)/dashboard/page.tsx` — Server Component importing mockDeals + KanbanBoard
+- Created `components/deals/DealsTable.tsx` — client table; stage filter + overdue toggle; StageBadge with color map (green for LIVE, yellow for PAYMENT_PENDING, blue for IN_PRODUCTION/PENDING_APPROVAL); links to /deals/[id]; Link-based "New Deal" button (no asChild — @base-ui/react/button incompatibility)
+- Created `app/(agency)/deals/page.tsx` — Server Component
+- Created `components/forms/InlineBrandForm.tsx` — react-hook-form + zod; no API call; generates brand_${Date.now()} id; calls onCreated callback
+- Created `components/forms/DealNewForm.tsx` — full form with platform/brand/creator selects; live payout preview (derived from watch, no useEffect); inline brand creation dialog; on submit → toast.success + router.push('/deals')
+- Created `app/(agency)/deals/new/page.tsx` — Server Component
+- Created `components/deals/SubmissionHistory.tsx` — table of submission rounds with status badges (green/yellow/outline); "No submissions yet." empty state
+- Created `components/deals/StageControlPanel.tsx` — advance dropdown excludes SYSTEM_CONTROLLED_STAGES; Reopen hidden at BRIEF_RECEIVED; system-controlled notice shown; all mutations via local state + toast
+- Created `components/deals/DealDetail.tsx` — 4-section layout (Brief, Contract, Content, Payment) in 2-col grid (lg); Section C handles approve/request-changes/submit-content flows entirely in state; Section D payout computed from dealValue * (1 - commissionPct/100); sticky stage panel right column
+- Created `app/(agency)/deals/[id]/page.tsx` — async Server Component; await params; notFound() if no match
+- Created `components/__tests__/p1-2-agency-core.test.tsx` — 31 Vitest tests covering DealCard (8), SubmissionHistory (5), StageControlPanel (5), DealsTable (8), dollar formatting (2), and helper assertions (3)
+- All 68 tests pass (37 foundation + 31 new) ✅
+- Zero TypeScript errors in our files; 4 pre-existing errors in components/brands/, components/briefs/, components/roster/ (outside frontend ownership) ✅
+- `npm run typecheck` on our files → clean ✅
+- Key bug found and fixed: @base-ui/react Select.onValueChange receives `string | null` not `string` — wrapped setters with `?? 'ALL'` fallback
+
+---
+
+## 2026-03-20 — revamp/phase-1: P1-3 through P1-6 (Supporting pages, Creator portal, Brand portal, Discovery, Landing)
+**Type**: Feature
+**Branch**: revamp/phase-1
+**What changed**:
+- Installed two new shadcn/ui components: `alert-dialog`, `switch` (both @base-ui/react backed)
+- **P1-3 Agency Supporting Pages**:
+  - `components/roster/AddCreatorSheet.tsx` — Sheet form with react-hook-form; platform checkboxes; niche tag CSV split; creates MockCreator with local state; `render={<Button />}` pattern (no asChild — base-ui incompatibility)
+  - `components/roster/RosterTable.tsx` — Table with initials avatar, @handle (font-mono), platform, niche tags, formatted followers, active deal count; AddCreatorSheet integration; empty state
+  - `app/(agency)/roster/page.tsx` — Server Component
+  - `components/brands/AddBrandDialog.tsx` — Dialog with name + website (optional URL) fields; creates MockBrand
+  - `components/brands/BrandsTable.tsx` — Table with brand name (linked to /brands/[id]), website, open deal count, total deal value; AddBrandDialog integration
+  - `app/(agency)/brands/page.tsx` — Server Component
+  - `app/(agency)/brands/[id]/page.tsx` — Server Component; brand info card + associated deals table; notFound() guard; await params
+  - `components/briefs/BriefsTable.tsx` — Table with status filter dropdown (onValueChange null-guard); status badges (blue/outline/green/destructive); links to /briefs/[id]
+  - `app/(agency)/briefs/page.tsx` — Server Component
+  - `components/briefs/BriefDetail.tsx` — Client component; Mark Reviewed / Decline (AlertDialogTrigger with render prop) / Convert to Deal actions; local status state; terminal state (CONVERTED/DECLINED) hides action buttons
+  - `app/(agency)/briefs/[id]/page.tsx` — Server Component; await params; notFound() guard
+  - `app/(agency)/not-found.tsx` — Agency 404 fallback
+- **P1-4 Creator Portal**:
+  - `app/(creator)/creator/deals/page.tsx` — Server Component; filters by MOCK_CREATOR_ID; deal cards with isOverdue badge; links to /creator/deals/[id]
+  - `components/creator/ContentSubmissionForm.tsx` — react-hook-form; URL validation; creates MockSubmission with round = max+1; onSubmitted callback; toast.success
+  - `components/creator/CreatorDealDetail.tsx` — Client; shows payout (text-4xl font-mono), contract status, payment status; NEVER shows dealValue/commissionPct/commissionPct label; submission history table; ContentSubmissionForm only for IN_PRODUCTION or PENDING_APPROVAL; auto-advances stage on first submission
+  - `app/(creator)/creator/deals/[id]/page.tsx` — Server Component; await params; creator-ID guard; notFound()
+  - `components/creator/CreatorProfileEditor.tsx` — Client; controlled form for all creator fields; handle readonly/disabled; niche tag input (Enter to add, X to remove); Switch for isPublic; avatar initials placeholder; toast.success on save
+  - `app/(creator)/creator/profile/page.tsx` — Server Component
+- **P1-5 Brand Manager Portal**:
+  - `components/briefs/SubmitBriefForm.tsx` — react-hook-form (no zod resolver — avoids zod v4 type incompatibility); manual validate(); platform + agency selects; success card with CheckCircle; "Submit another brief" resets state
+  - `app/(brand)/briefs/new/page.tsx` — Server Component
+- **P1-6 Discovery + Landing**:
+  - `components/creator/CreatorCard.tsx` — Server Component; initials avatar; platforms/niche/follower badges; links to /creators/[handle]
+  - `components/creator/CreatorDirectory.tsx` — Client; search, niche, platform checkboxes, min-engagement filters; grid layout 1→2→3→4 cols; empty state
+  - `app/(public)/discover/page.tsx` — Server Component; filters isPublic creators
+  - `components/creator/PartnershipRequestDialog.tsx` — Client; Dialog with optional message textarea; toast.success on send; render={<Button />} trigger
+  - `app/(public)/creators/[handle]/page.tsx` — Server Component; isPublic guard; notFound(); PartnershipRequestDialog
+  - `app/(public)/agencies/page.tsx` — Server Component; revalidate: 3600; 3 mock agencies
+  - `app/(public)/page.tsx` — Landing page with nav, hero, "How it works" steps, role cards, footer; replaced placeholder
+  - `app/(public)/layout.tsx` — Minimal passthrough (no sidebar for public routes)
+- **Tests**: `components/__tests__/p1-3-to-p1-6.test.tsx` — 33 Vitest tests covering RosterTable (6), BrandsTable (5), BriefsTable (4), CreatorCard (6), CreatorDealDetail (6), CreatorProfileEditor (6)
+- Total: 101 component tests pass ✅
+- `npm run typecheck` → zero errors ✅
+- `npm run build` → clean build, 14 routes (7 static, 4 dynamic, 3 revalidated) ✅
+- Key fix: All @base-ui/react Trigger components use `render={<Component />}` not `asChild`; Select.onValueChange receives `string | null`, null-guarded with `if (val !== null)` pattern
+
+---
+
 ## 2026-03-19 — CI fixes: test regex + vitest env (PR #9 follow-up)
 **Type**: Bug fix
 **Branch**: fix/pre-m3-landing-auth (commits 467669f, e579c71)
@@ -277,3 +380,75 @@ _Append only. One entry per session or PR. Never delete._
 - `app/page.test.tsx` line 70: tightened regex from `/get started/i` to `/^get started$/i` — the broad regex matched all 4 "Get started" links on the landing page causing `getByRole` to throw "Found multiple elements"
 - `vitest.config.ts`: switched `components/__tests__/**/*.test.tsx` from `jsdom` to `happy-dom` to eliminate 5 unhandled errors from `html-encoding-sniffer` v6's synchronous `require()` of `@exodus/bytes` (pure-ESM); both globs now use `happy-dom`
 - All 100 tests pass, zero unhandled errors, CI green
+
+---
+
+## 2026-03-20 — Phase 1 UI Shell complete
+
+Built complete Phase 1 UI Shell with mock data — all 18 routes, no API calls, no Clerk, no database.
+
+### Routes built
+Agency:
+- /dashboard — Kanban board (dnd-kit, 8 columns, drag-and-drop, filters)
+- /deals — Deal list table with stage filter + overdue toggle
+- /deals/new — Create deal form with live payout preview + inline brand creation
+- /deals/[id] — Deal detail: 4 sections (Brief, Contract, Content, Payment) + Stage Control Panel
+- /roster — Creator roster table + Add Creator Sheet
+- /brands — Brands table + Add Brand Dialog
+- /brands/[id] — Brand detail + associated deals
+- /briefs — Brief inbox with status filter
+- /briefs/[id] — Brief detail + Convert/Decline/Reviewed actions
+
+Creator Portal:
+- /creator/deals — My deals (filtered to creator_001)
+- /creator/deals/[id] — Creator deal detail (hides commission %, deal value)
+- /creator/profile — Profile editor
+
+Brand Manager Portal:
+- /briefs/new — Submit brief form + success screen
+
+Public:
+- / — Landing page (hero, how it works, role cards, footer)
+- /discover — Creator directory with client-side filters
+- /creators/[handle] — Public creator profile + Partnership Request dialog
+- /agencies — Agency listing (3 mock agencies)
+
+### What all pages use
+- lib/mock/ fixtures (creators, deals, brands, briefs, submissions)
+- Local React state for all mutations
+- sonner toasts for all form submissions
+- shadcn/ui for all UI primitives
+- Geist Sans + Geist Mono fonts
+- Dark mode (zinc/slate)
+
+---
+
+## 2026-03-20 — Phase 1 UI Shell build verification
+**Type**: Verification
+**Branch**: revamp/phase-1
+
+**Steps run**:
+1. `npm run typecheck` — zero errors (exit 0)
+2. `npm run build` — compiled successfully in 7.2s; 14 routes generated (7 static, 4 dynamic, 1 ISR at 1h); zero build errors, zero warnings
+
+**Route coverage** — all 18 required page.tsx files confirmed present:
+- Agency (9/9): dashboard, deals, deals/new, deals/[id], roster, brands, brands/[id], briefs, briefs/[id]
+- Creator (3/3): creator/deals, creator/deals/[id], creator/profile
+- Brand (1/1): briefs/new
+- Public (4/4): / (landing), discover, creators/[handle], agencies
+
+**Layout files** — all 5 confirmed present:
+- app/layout.tsx (root)
+- app/(agency)/layout.tsx
+- app/(creator)/layout.tsx
+- app/(brand)/layout.tsx
+- app/(public)/layout.tsx
+
+**Lib files** — all 9 confirmed present:
+- lib/mock/creators.ts, brands.ts, deals.ts, submissions.ts, briefs.ts
+- lib/role-context.tsx
+- lib/stage-transitions.client.ts
+- lib/overdue.client.ts
+- lib/utils.ts
+
+**Issues found**: None. No fixes were required.
