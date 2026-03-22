@@ -10,16 +10,26 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import type { MockCreator } from '@/lib/mock/creators'
+type CreatorProfile = {
+  name: string
+  handle: string
+  bio: string | null
+  avatarUrl: string | null
+  platforms: string[]
+  nicheTags: string[]
+  followerCount: number | null
+  engagementRate: number | null
+  isPublic: boolean
+}
 
 const ALL_PLATFORMS = ['Instagram', 'TikTok', 'YouTube', 'Twitter', 'LinkedIn', 'Pinterest'] as const
 
 interface CreatorProfileEditorProps {
-  initialCreator: MockCreator
+  initialCreator: CreatorProfile
 }
 
 export function CreatorProfileEditor({ initialCreator }: CreatorProfileEditorProps) {
-  const [creator, setCreator] = useState<MockCreator>(initialCreator)
+  const [creator, setCreator] = useState<CreatorProfile>(initialCreator)
   const [tagInput, setTagInput] = useState('')
 
   const initials = creator.name
@@ -56,8 +66,30 @@ export function CreatorProfileEditor({ initialCreator }: CreatorProfileEditorPro
     }))
   }
 
-  function handleSave() {
-    toast.success('Profile saved')
+  async function handleSave() {
+    try {
+      const res = await fetch('/api/v1/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: creator.name,
+          bio: creator.bio,
+          platforms: creator.platforms,
+          nicheTags: creator.nicheTags,
+          followerCount: creator.followerCount,
+          engagementRate: creator.engagementRate,
+          isPublic: creator.isPublic,
+        }),
+      })
+      if (!res.ok) {
+        const json = await res.json()
+        toast.error(json.error ?? 'Failed to save profile')
+        return
+      }
+      toast.success('Profile saved')
+    } catch {
+      toast.error('Failed to save profile')
+    }
   }
 
   return (

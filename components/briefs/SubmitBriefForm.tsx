@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,9 +18,7 @@ import {
 import { Card } from '@/components/ui/card'
 
 const MOCK_AGENCIES = [
-  { id: 'agency_001', name: 'Apex Talent Group' },
-  { id: 'agency_002', name: 'Nova Creator Agency' },
-  { id: 'agency_003', name: 'Spark Media Management' },
+  { id: 'test_agency_001', name: 'Apex Talent Group' },
 ]
 
 const PLATFORMS = [
@@ -79,10 +78,32 @@ export function SubmitBriefForm() {
     return errs
   }
 
-  function onSubmit(data: BriefFormValues) {
+  async function onSubmit(data: BriefFormValues) {
     const errs = validate(data)
     if (Object.keys(errs).length > 0) return
-    setSubmitted(true)
+
+    try {
+      const res = await fetch('/api/v1/briefs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agencyClerkId: data.agencyId,
+          title: data.title,
+          description: data.description,
+          platform: data.platform || undefined,
+          niche: data.niche || undefined,
+          budget: data.budget ? Number(data.budget) : undefined,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        toast.error(json.error ?? 'Failed to submit brief')
+        return
+      }
+      setSubmitted(true)
+    } catch {
+      toast.error('Failed to submit brief')
+    }
   }
 
   if (submitted) {
