@@ -9,22 +9,38 @@ import NewBriefEmail from '@/emails/new-brief'
 import React from 'react'
 
 export async function GET(req: NextRequest) {
-  const authResult = await requireAgencyAuth()
-  if (!authResult.ok) return authResult.response
-  const { userId: agencyClerkId } = authResult
-
   const status = req.nextUrl.searchParams.get('status') ?? undefined
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = { agencyClerkId }
-  if (status) where.status = status
+  // Try agency auth first
+  const agencyAuth = await requireAgencyAuth()
+  if (agencyAuth.ok) {
+    const { userId: agencyClerkId } = agencyAuth
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = { agencyClerkId }
+    if (status) where.status = status
+    const briefs = await db.brief.findMany({
+      where,
+      include: { creator: { select: { id: true, name: true, handle: true, avatarUrl: true } } },
+      orderBy: { createdAt: 'desc' },
+    })
+    return ok(briefs.map(serializeBrief))
+  }
 
+  // Return 401 immediately if not logged in; only try brand auth on 403 (wrong role)
+  if (agencyAuth.response.status !== 403) return agencyAuth.response
+
+  const brandAuth = await requireBrandAuth()
+  if (!brandAuth.ok) return brandAuth.response
+  const { userId: brandManagerClerkId } = brandAuth
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = { brandManagerClerkId }
+  if (status) where.status = status
   const briefs = await db.brief.findMany({
     where,
     include: { creator: { select: { id: true, name: true, handle: true, avatarUrl: true } } },
     orderBy: { createdAt: 'desc' },
   })
-
   return ok(briefs.map(serializeBrief))
 }
 

@@ -293,6 +293,58 @@ Manually adds a creator to the agency roster. Used for creators who don't have a
 
 ---
 
+## Creator Profile
+
+### GET /api/v1/profile
+
+Returns the Creator record for the authenticated creator.
+
+**Auth**: Creator only (or superadmin acting as creator)
+**Response 200**: Creator object
+**Error codes**:
+- `401` — Not authenticated
+- `403` — Authenticated but not a creator
+- `404` — No Creator record found for this Clerk user
+
+---
+
+### PATCH /api/v1/profile
+
+Updates updatable fields on the authenticated creator's profile. `handle` is immutable and cannot be changed via this endpoint.
+
+**Auth**: Creator only (or superadmin acting as creator)
+
+**Request body** (all fields optional):
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | Display name |
+| `bio` | `string \| null` | Creator bio |
+| `platforms` | `string[]` | List of platforms (e.g. `["Instagram", "TikTok"]`) |
+| `nicheTags` | `string[]` | List of niche tags |
+| `followerCount` | `number \| null` | Total follower count |
+| `engagementRate` | `number \| null` | Engagement rate as a percentage (0–100) |
+| `isPublic` | `boolean` | Whether the profile appears in /discover |
+
+**Response 200**: Updated creator object
+**Error codes**:
+- `400` — Invalid JSON
+- `404` — Creator profile not found
+- `422` — Validation error
+
+---
+
+## GET /api/v1/briefs — multi-role support
+
+This endpoint supports two caller roles:
+
+- **Agency**: Returns briefs filtered by `agencyClerkId` (briefs submitted to this agency)
+- **Brand Manager**: Returns briefs filtered by `brandManagerClerkId` (briefs submitted by this brand manager)
+
+The handler tries agency auth first; if the caller is authenticated but not an agency (403), it falls back to brand manager auth.
+
+---
+
 ## Deal stage transition rules
 
 | Stage | How it is set |
