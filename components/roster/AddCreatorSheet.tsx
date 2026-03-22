@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import type { MockCreator } from '@/lib/mock/creators'
 
 const PLATFORMS = ['Instagram', 'TikTok', 'YouTube', 'Twitter', 'LinkedIn', 'Pinterest'] as const
 
@@ -28,8 +27,25 @@ type FormValues = {
   engagementRate: string
 }
 
+export type ApiCreator = {
+  id: string
+  clerkId: string
+  name: string
+  handle: string
+  bio: string | null
+  avatarUrl: string | null
+  platforms: string[]
+  nicheTags: string[]
+  followerCount: number | null
+  engagementRate: number | null
+  isPublic: boolean
+  agencyClerkId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 interface AddCreatorSheetProps {
-  onCreated: (creator: MockCreator) => void
+  onCreated: (creator: ApiCreator) => void
 }
 
 export function AddCreatorSheet({ onCreated }: AddCreatorSheetProps) {
@@ -40,7 +56,7 @@ export function AddCreatorSheet({ onCreated }: AddCreatorSheetProps) {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormValues>()
 
   function togglePlatform(platform: string) {
@@ -49,27 +65,30 @@ export function AddCreatorSheet({ onCreated }: AddCreatorSheetProps) {
     )
   }
 
-  function onSubmit(data: FormValues) {
-    const newCreator: MockCreator = {
-      // eslint-disable-next-line react-hooks/purity
-      id: `creator_${Date.now()}`,
-      // eslint-disable-next-line react-hooks/purity
-      clerkId: `clerk_${Date.now()}`,
+  async function onSubmit(data: FormValues) {
+    const body: Record<string, unknown> = {
       name: data.name,
       handle: data.handle,
-      bio: data.bio || null,
-      avatarUrl: null,
       platforms: selectedPlatforms,
       nicheTags: data.nicheTags
         ? data.nicheTags.split(',').map(t => t.trim()).filter(Boolean)
         : [],
-      followerCount: data.followerCount ? Number(data.followerCount) : null,
-      engagementRate: data.engagementRate ? Number(data.engagementRate) : null,
-      isPublic: true,
-      agencyClerkId: 'test_agency_001',
-      createdAt: new Date().toISOString(),
     }
-    onCreated(newCreator)
+    if (data.bio) body.bio = data.bio
+    if (data.followerCount) body.followerCount = Number(data.followerCount)
+    if (data.engagementRate) body.engagementRate = Number(data.engagementRate)
+
+    const res = await fetch('/api/v1/roster', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to add creator')
+      return
+    }
+    onCreated(json.data)
     toast.success('Creator added to roster')
     reset()
     setSelectedPlatforms([])
@@ -171,7 +190,9 @@ export function AddCreatorSheet({ onCreated }: AddCreatorSheetProps) {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button type="submit" className="flex-1">Add Creator</Button>
+            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+              {isSubmitting ? 'Adding...' : 'Add Creator'}
+            </Button>
             <Button
               type="button"
               variant="outline"

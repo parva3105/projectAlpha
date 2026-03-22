@@ -9,7 +9,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { MockSubmission } from '@/lib/mock/submissions'
+
+export type ApiSubmission = {
+  id: string
+  dealId: string
+  creatorId: string
+  round: number
+  url: string | null
+  fileKey: string | null
+  status: string
+  feedback: string | null
+  submittedAt: string
+  reviewedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
 
 function StatusBadge({ status }: { status: string }) {
   if (status === 'APPROVED') {
@@ -36,7 +50,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 interface SubmissionHistoryProps {
-  submissions: MockSubmission[]
+  submissions: ApiSubmission[]
 }
 
 export function SubmissionHistory({ submissions }: SubmissionHistoryProps) {

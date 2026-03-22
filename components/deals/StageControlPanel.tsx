@@ -10,11 +10,32 @@ import {
   SYSTEM_CONTROLLED_STAGES,
   getPreviousStage,
 } from '@/lib/stage-transitions.client'
-import type { MockDeal } from '@/lib/mock/deals'
+
+type ApiDeal = {
+  id: string
+  title: string
+  agencyClerkId: string
+  brandId: string
+  creatorId: string | null
+  briefId: string | null
+  stage: string
+  dealValue: number
+  commissionPct: number
+  creatorPayout: number
+  deadline: string | null
+  contractStatus: string
+  contractUrl: string | null
+  paymentStatus: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  brand: { id: string; name: string; website: string | null }
+  creator: { id: string; name: string; handle: string; avatarUrl: string | null } | null
+}
 
 interface StageControlPanelProps {
-  deal: MockDeal
-  onDealChange: (deal: MockDeal) => void
+  deal: ApiDeal
+  onDealChange: (deal: ApiDeal) => void
 }
 
 export function StageControlPanel({ deal, onDealChange }: StageControlPanelProps) {
@@ -29,18 +50,36 @@ export function StageControlPanel({ deal, onDealChange }: StageControlPanelProps
   const isCurrentSystemControlled = SYSTEM_CONTROLLED_STAGES.includes(deal.stage)
   const previousStage = getPreviousStage(deal.stage)
 
-  function handleAdvance() {
+  async function handleAdvance() {
     if (!selectedStage) return
-    const updated: MockDeal = { ...deal, stage: selectedStage }
-    onDealChange(updated)
+
+    const res = await fetch(`/api/v1/deals/${deal.id}/stage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: selectedStage }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to advance stage')
+      return
+    }
+    onDealChange(json.data)
     setSelectedStage('')
     toast.success(`Advanced to ${STAGE_LABELS[selectedStage]}`)
   }
 
-  function handleReopen() {
+  async function handleReopen() {
     if (!previousStage) return
-    const updated: MockDeal = { ...deal, stage: previousStage }
-    onDealChange(updated)
+
+    const res = await fetch(`/api/v1/deals/${deal.id}/reopen`, {
+      method: 'POST',
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to reopen deal')
+      return
+    }
+    onDealChange(json.data)
     toast.success(`Reverted to ${STAGE_LABELS[previousStage]}`)
   }
 

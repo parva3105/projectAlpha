@@ -3,7 +3,28 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { isOverdue } from '@/lib/overdue.client'
-import type { MockDeal } from '@/lib/mock/deals'
+
+type ApiDeal = {
+  id: string
+  title: string
+  agencyClerkId: string
+  brandId: string
+  creatorId: string | null
+  briefId: string | null
+  stage: string
+  dealValue: number
+  commissionPct: number
+  creatorPayout: number
+  deadline: string | null
+  contractStatus: string
+  contractUrl: string | null
+  paymentStatus: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  brand: { id: string; name: string; website: string | null }
+  creator: { id: string; name: string; handle: string; avatarUrl: string | null } | null
+}
 
 function formatDollars(value: number): string {
   return `$${value.toLocaleString('en-US', {
@@ -13,7 +34,7 @@ function formatDollars(value: number): string {
 }
 
 interface DealCardProps {
-  deal: MockDeal
+  deal: ApiDeal
 }
 
 export function DealCard({ deal }: DealCardProps) {
@@ -42,12 +63,9 @@ export function DealCard({ deal }: DealCardProps) {
           </p>
         </div>
 
-        {/* Platform badge + deadline row */}
-        <div className="flex items-center justify-between gap-2">
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-            {deal.platform}
-          </Badge>
-          {deal.deadline && (
+        {/* Deadline row */}
+        {deal.deadline && (
+          <div className="flex items-center justify-end">
             <span
               className={`text-[10px] font-mono tabular-nums ${
                 overdue ? 'text-destructive' : 'text-muted-foreground'
@@ -58,8 +76,8 @@ export function DealCard({ deal }: DealCardProps) {
                 day: 'numeric',
               })}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Deal value */}
         <p className="text-xs font-mono font-semibold text-foreground tabular-nums">

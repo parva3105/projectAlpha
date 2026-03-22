@@ -5,12 +5,12 @@ import { Badge } from '@/components/ui/badge'
 import { DealCard } from './DealCard'
 import { DealDraggable } from './DealDraggable'
 import { cn } from '@/lib/utils'
-import type { MockDeal } from '@/lib/mock/deals'
+import type { ApiDeal } from './KanbanBoard'
 
 interface KanbanColumnProps {
   id: string
   label: string
-  deals: MockDeal[]
+  deals: ApiDeal[]
 }
 
 export function KanbanColumn({ id, label, deals }: KanbanColumnProps) {

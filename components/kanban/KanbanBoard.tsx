@@ -19,15 +19,36 @@ import {
 import { KanbanColumn } from './KanbanColumn'
 import { KanbanFilters } from './KanbanFilters'
 import { DealCard } from './DealCard'
-import type { MockDeal } from '@/lib/mock/deals'
+
+export type ApiDeal = {
+  id: string
+  title: string
+  agencyClerkId: string
+  brandId: string
+  creatorId: string | null
+  briefId: string | null
+  stage: string
+  dealValue: number
+  commissionPct: number
+  creatorPayout: number
+  deadline: string | null
+  contractStatus: string
+  contractUrl: string | null
+  paymentStatus: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  brand: { id: string; name: string; website: string | null }
+  creator: { id: string; name: string; handle: string; avatarUrl: string | null } | null
+}
 
 interface KanbanBoardProps {
-  initialDeals: MockDeal[]
+  initialDeals: ApiDeal[]
 }
 
 export function KanbanBoard({ initialDeals }: KanbanBoardProps) {
-  const [deals, setDeals] = useState<MockDeal[]>(initialDeals)
-  const [filteredDeals, setFilteredDeals] = useState<MockDeal[]>(initialDeals)
+  const [deals, setDeals] = useState<ApiDeal[]>(initialDeals)
+  const [filteredDeals, setFilteredDeals] = useState<ApiDeal[]>(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -38,7 +59,7 @@ export function KanbanBoard({ initialDeals }: KanbanBoardProps) {
 
   const activeDeal = activeId ? deals.find((d) => d.id === activeId) ?? null : null
 
-  function dealsByStage(stage: string): MockDeal[] {
+  function dealsByStage(stage: string): ApiDeal[] {
     return filteredDeals.filter((d) => d.stage === stage)
   }
 
@@ -46,7 +67,7 @@ export function KanbanBoard({ initialDeals }: KanbanBoardProps) {
     setActiveId(event.active.id as string)
   }
 
-  function handleDragEnd(event: DragEndEvent) {
+  async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     setActiveId(null)
 
@@ -67,18 +88,33 @@ export function KanbanBoard({ initialDeals }: KanbanBoardProps) {
       return
     }
 
-    // Move deal to new stage in local state
-    const updated = deals.map((d) =>
-      d.id === dealId ? { ...d, stage: targetStage } : d
-    )
-    setDeals(updated)
-    setFilteredDeals((prev) =>
-      prev.map((d) => (d.id === dealId ? { ...d, stage: targetStage } : d))
-    )
+    // Optimistic update — remember original stage for rollback
+    const originalStage = deal.stage
+    const applyStage = (stage: string) => (d: ApiDeal) =>
+      d.id === dealId ? { ...d, stage } : d
+
+    setDeals((prev) => prev.map(applyStage(targetStage)))
+    setFilteredDeals((prev) => prev.map(applyStage(targetStage)))
+
+    // Persist to API
+    const res = await fetch(`/api/v1/deals/${dealId}/stage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: targetStage }),
+    })
+
+    if (!res.ok) {
+      // Revert optimistic update
+      setDeals((prev) => prev.map(applyStage(originalStage)))
+      setFilteredDeals((prev) => prev.map(applyStage(originalStage)))
+      toast.error('Failed to move deal — changes reverted')
+      return
+    }
+
     toast.success(`Moved to ${STAGE_LABELS[targetStage]}`)
   }
 
-  function handleFilterChange(filtered: MockDeal[]) {
+  function handleFilterChange(filtered: ApiDeal[]) {
     setFilteredDeals(filtered)
   }
 

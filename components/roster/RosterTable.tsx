@@ -11,8 +11,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { AddCreatorSheet } from '@/components/roster/AddCreatorSheet'
-import type { MockCreator } from '@/lib/mock/creators'
-import type { MockDeal } from '@/lib/mock/deals'
+import type { ApiCreator } from '@/components/roster/AddCreatorSheet'
+
+type ApiDeal = {
+  id: string
+  creatorId: string | null
+  stage: string
+}
 
 const CLOSED_STAGES = ['CLOSED', 'LIVE']
 
@@ -24,14 +29,14 @@ function formatFollowers(count: number | null): string {
 }
 
 interface RosterTableProps {
-  initialCreators: MockCreator[]
-  deals: MockDeal[]
+  initialCreators: ApiCreator[]
+  deals: ApiDeal[]
 }
 
 export function RosterTable({ initialCreators, deals }: RosterTableProps) {
-  const [creators, setCreators] = useState<MockCreator[]>(initialCreators)
+  const [creators, setCreators] = useState<ApiCreator[]>(initialCreators)
 
-  function handleCreated(creator: MockCreator) {
+  function handleCreated(creator: ApiCreator) {
     setCreators(prev => [...prev, creator])
   }
 

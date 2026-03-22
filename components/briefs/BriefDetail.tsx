@@ -16,7 +16,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import type { MockBrief } from '@/lib/mock/briefs'
+
+type ApiBrief = {
+  id: string
+  brandManagerClerkId: string
+  agencyClerkId: string
+  creatorId: string | null
+  title: string
+  description: string
+  budget: number | null
+  platform: string | null
+  niche: string | null
+  status: string
+  createdAt: string
+  updatedAt: string
+}
 
 function statusBadge(status: string) {
   switch (status) {
@@ -34,20 +48,40 @@ function statusBadge(status: string) {
 }
 
 interface BriefDetailProps {
-  initialBrief: MockBrief
+  initialBrief: ApiBrief
 }
 
 export function BriefDetail({ initialBrief }: BriefDetailProps) {
-  const [brief, setBrief] = useState<MockBrief>(initialBrief)
+  const [brief, setBrief] = useState<ApiBrief>(initialBrief)
   const router = useRouter()
 
-  function handleMarkReviewed() {
-    setBrief(prev => ({ ...prev, status: 'REVIEWED' }))
+  async function handleMarkReviewed() {
+    const res = await fetch(`/api/v1/briefs/${brief.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'REVIEWED' }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to mark brief as reviewed')
+      return
+    }
+    setBrief(json.data)
     toast.success('Brief marked as reviewed')
   }
 
-  function handleDecline() {
-    setBrief(prev => ({ ...prev, status: 'DECLINED' }))
+  async function handleDecline() {
+    const res = await fetch(`/api/v1/briefs/${brief.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'DECLINED' }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to decline brief')
+      return
+    }
+    setBrief(json.data)
     toast.success('Brief declined')
   }
 
@@ -61,7 +95,7 @@ export function BriefDetail({ initialBrief }: BriefDetailProps) {
           <h1 className="text-2xl font-bold tracking-tight">{brief.title}</h1>
           <div className="flex items-center gap-2 mt-2">
             {statusBadge(brief.status)}
-            <Badge variant="outline">{brief.platform}</Badge>
+            {brief.platform && <Badge variant="outline">{brief.platform}</Badge>}
           </div>
         </div>
       </div>
@@ -74,18 +108,24 @@ export function BriefDetail({ initialBrief }: BriefDetailProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-1">Platform</p>
-            <p className="text-sm">{brief.platform}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-1">Niche</p>
-            <p className="text-sm">{brief.niche}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-1">Budget</p>
-            <p className="font-mono text-sm tabular-nums">${brief.budget.toLocaleString()}</p>
-          </div>
+          {brief.platform && (
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-1">Platform</p>
+              <p className="text-sm">{brief.platform}</p>
+            </div>
+          )}
+          {brief.niche && (
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-1">Niche</p>
+              <p className="text-sm">{brief.niche}</p>
+            </div>
+          )}
+          {brief.budget != null && (
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-1">Budget</p>
+              <p className="font-mono text-sm tabular-nums">${brief.budget.toLocaleString()}</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -94,12 +134,8 @@ export function BriefDetail({ initialBrief }: BriefDetailProps) {
         <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium mb-3">Submitted By</p>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Name</p>
-            <p className="text-sm font-medium">{brief.brandManagerName}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Company</p>
-            <p className="text-sm">{brief.brandManagerCompany}</p>
+            <p className="text-xs text-muted-foreground mb-0.5">Submitted By (Clerk ID)</p>
+            <p className="text-sm font-mono text-muted-foreground">{brief.brandManagerClerkId}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-0.5">Date</p>
@@ -146,8 +182,8 @@ export function BriefDetail({ initialBrief }: BriefDetailProps) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Decline this brief?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will mark the brief as declined. The brand manager will not be
-                    notified in Phase 1.
+                    This will mark the brief as declined. The brand manager will be
+                    notified by email.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

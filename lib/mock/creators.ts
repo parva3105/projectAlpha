@@ -12,6 +12,7 @@ export type MockCreator = {
   isPublic: boolean
   agencyClerkId: string | null
   createdAt: string
+  updatedAt: string
 }
 
 export const mockCreators: MockCreator[] = [
@@ -29,6 +30,7 @@ export const mockCreators: MockCreator[] = [
     isPublic: true,
     agencyClerkId: "test_agency_001",
     createdAt: "2026-01-10T09:00:00Z",
+    updatedAt: "2026-01-10T09:00:00Z",
   },
   {
     id: "creator_002",
@@ -44,6 +46,7 @@ export const mockCreators: MockCreator[] = [
     isPublic: true,
     agencyClerkId: "test_agency_001",
     createdAt: "2026-01-15T09:00:00Z",
+    updatedAt: "2026-01-15T09:00:00Z",
   },
   {
     id: "creator_003",
@@ -59,6 +62,7 @@ export const mockCreators: MockCreator[] = [
     isPublic: true,
     agencyClerkId: "test_agency_001",
     createdAt: "2026-02-01T09:00:00Z",
+    updatedAt: "2026-02-01T09:00:00Z",
   },
   {
     id: "creator_004",
@@ -74,6 +78,7 @@ export const mockCreators: MockCreator[] = [
     isPublic: true,
     agencyClerkId: null,
     createdAt: "2026-02-10T09:00:00Z",
+    updatedAt: "2026-02-10T09:00:00Z",
   },
   {
     id: "creator_005",
@@ -89,6 +94,7 @@ export const mockCreators: MockCreator[] = [
     isPublic: false,
     agencyClerkId: "test_agency_001",
     createdAt: "2026-03-01T09:00:00Z",
+    updatedAt: "2026-03-01T09:00:00Z",
   },
 ]
 

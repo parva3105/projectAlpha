@@ -40,12 +40,9 @@ vi.mock('sonner', () => ({
   },
 }))
 
-import type { MockDeal } from '@/lib/mock/deals'
-import type { MockSubmission } from '@/lib/mock/submissions'
-
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
-const baseDeal: MockDeal = {
+const baseDeal = {
   id: 'deal_test',
   agencyClerkId: 'agency_001',
   brandId: 'brand_001',
@@ -62,19 +59,21 @@ const baseDeal: MockDeal = {
   paymentStatus: 'PENDING',
   notes: null,
   createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-01-01T00:00:00Z',
+  // platform kept for DealsTable (still typed MockDeal); DealCard no longer renders it
   platform: 'Instagram',
   brand: { id: 'brand_001', name: 'Acme Corp', website: 'https://acme.com' },
-  creator: { id: 'creator_001', name: 'Jane Doe', handle: 'janedoe' },
+  creator: { id: 'creator_001', name: 'Jane Doe', handle: 'janedoe', avatarUrl: null },
 }
 
-const overdueDeal: MockDeal = {
+const overdueDeal = {
   ...baseDeal,
   id: 'deal_overdue',
   deadline: '2020-01-01T00:00:00Z',
   stage: 'IN_PRODUCTION',
 }
 
-const noCreatorDeal: MockDeal = {
+const noCreatorDeal = {
   ...baseDeal,
   id: 'deal_no_creator',
   creator: null,
@@ -106,11 +105,6 @@ describe('DealCard', () => {
     expect(screen.getByText('Unassigned')).toBeTruthy()
   })
 
-  it('renders platform badge', () => {
-    render(<DealCard deal={baseDeal} />)
-    expect(screen.getByText('Instagram')).toBeTruthy()
-  })
-
   it('renders deal value formatted', () => {
     render(<DealCard deal={baseDeal} />)
     expect(screen.getByText('$5,000.00')).toBeTruthy()
@@ -137,7 +131,7 @@ describe('DealCard', () => {
 
 import { SubmissionHistory } from '@/components/deals/SubmissionHistory'
 
-const submissions: MockSubmission[] = [
+const submissions = [
   {
     id: 'sub_001',
     dealId: 'deal_test',
@@ -149,6 +143,8 @@ const submissions: MockSubmission[] = [
     feedback: 'Please reshoot the opening.',
     submittedAt: '2026-03-01T10:00:00Z',
     reviewedAt: '2026-03-02T09:00:00Z',
+    createdAt: '2026-03-01T10:00:00Z',
+    updatedAt: '2026-03-02T09:00:00Z',
   },
   {
     id: 'sub_002',
@@ -161,6 +157,8 @@ const submissions: MockSubmission[] = [
     feedback: null,
     submittedAt: '2026-03-05T10:00:00Z',
     reviewedAt: '2026-03-06T09:00:00Z',
+    createdAt: '2026-03-05T10:00:00Z',
+    updatedAt: '2026-03-06T09:00:00Z',
   },
 ]
 
@@ -285,13 +283,13 @@ describe('DealsTable', () => {
   })
 
   it('renders both overdue and non-overdue deals before any filter', () => {
-    const futureDeadlineDeal: MockDeal = {
+    const futureDeadlineDeal = {
       ...baseDeal,
       id: 'deal_future',
       title: 'Future Deadline Deal',
       deadline: '2099-12-31T00:00:00Z',
     }
-    const pastDeadlineDeal: MockDeal = {
+    const pastDeadlineDeal = {
       ...baseDeal,
       id: 'deal_past',
       title: 'Past Deadline Deal',
