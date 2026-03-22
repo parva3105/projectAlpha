@@ -306,3 +306,19 @@ Why: z.coerce.number() resolver type inference changed in Zod v4, causing TypeSc
 **Alternatives considered**: Keeping agency auth and adding a separate creator endpoint (rejected — unnecessary duplication; PATCH on the same resource by the responding party is RESTful).
 
 ---
+
+## 2026-03-22 — `platform` field removed from Deal UI
+
+**Decision**: Removed all `deal.platform` references (badge in DealCard, badge in DealDetail, platform filter in KanbanFilters). The `platform` field in `DealNewForm` is kept in the local form validation but not sent to the API.
+**Reason**: The Prisma `Deal` model has no `platform` column. The field was present in mock data and Phase 1 UI but was never persisted. Sending it to the API would silently be ignored; showing it would display stale/unvalidated data.
+**Alternatives considered**: Adding `platform` to the Prisma schema (rejected — out of scope; MVP does not require per-deal platform tracking; agency tracks this at the creator level via `platforms: String[]` on the Creator model).
+
+---
+
+## 2026-03-22 — `BriefDetail` "Submitted By" section
+
+**Decision**: Replaced `brief.brandManagerName` / `brief.brandManagerCompany` display with `brief.brandManagerClerkId`.
+**Reason**: `brandManagerName` and `brandManagerCompany` were mock-only fields — they don't exist in the Prisma `Brief` model or the API response. The real API only returns `brandManagerClerkId`. Displaying the raw Clerk ID is an acceptable stopgap until a future session enriches the brief API to join the brand manager's profile.
+**Alternatives considered**: Fetching the Clerk user profile client-side (rejected — adds complexity, network round-trip, and Clerk API dependency; deferred to a future polish pass).
+
+---

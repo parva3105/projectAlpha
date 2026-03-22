@@ -3,6 +3,22 @@ _Append only. One entry per session or PR. Never delete._
 
 ---
 
+## 2026-03-22 — Fix Phase 1 mock wiring (fix/phase1-mock-wiring)
+
+### What changed
+- **SubmitBriefForm**: replaced 3 fake agency IDs with `test_agency_001` (the only seeded agency). Added `fetch()` to `POST /api/v1/briefs`; `setSubmitted(true)` only on 2xx; `toast.error()` on failure.
+- **GET /api/v1/briefs**: now supports both `agency` and `brand_manager` roles. Tries `requireAgencyAuth()` first; falls back to `requireBrandAuth()` on 403. Returns briefs scoped to the caller's role.
+- **app/(brand)/brand/briefs/page.tsx**: new Server Component listing briefs submitted by the authenticated brand manager. Includes status badges and an empty state linking to `/brand/briefs/new`.
+- **GET/PATCH /api/v1/profile**: new endpoint for creator profile. GET returns the Creator record; PATCH validates with `UpdateCreatorProfileSchema` and updates allowed fields. `handle` is immutable.
+- **lib/validations/creator.ts**: new file with `UpdateCreatorProfileSchema` (Zod).
+- **creator/profile/page.tsx**: removed `mockCreators` import; fetches from `GET /api/v1/profile` via `serverFetch()`; handles 404 gracefully.
+- **CreatorProfileEditor**: replaced `MockCreator` import with inline `CreatorProfile` type; `handleSave()` now calls `PATCH /api/v1/profile` with `toast.success/error` feedback.
+
+### Why
+Three features survived Phase 1 with mock-only wiring: brief submission never hit the API, the brand manager had no briefs listing, and the creator profile neither loaded real data nor persisted saves.
+
+---
+
 ## 2026-03-21 — Phase 3: Auth + Superadmin + Polish (revamp/phase-3)
 
 ### What changed
@@ -671,5 +687,34 @@ All templates use `@react-email/components` pattern matching existing templates.
 ### Pre-existing TS errors (not introduced by this session)
 - `app/(public)/signup/page.tsx`: `asChild` prop on Button (frontend agent domain).
 - `components/layout/RoleSwitcher.tsx`: Select `onValueChange` null type (frontend agent domain).
+
+---
+
+## 2026-03-22 — Wire agency components to real API (fix/agency-api-wiring)
+
+### What changed
+- **InlineBrandForm**: replaced mock handler with `POST /api/v1/brands`; exports `ApiBrand` type.
+- **DealNewForm**: replaced mock `onSubmit` with `POST /api/v1/deals`; omits `platform` (not in schema); uses `ApiBrand` from InlineBrandForm; navigates to `/deals/[id]` on success.
+- **AddCreatorSheet**: replaced mock handler with `POST /api/v1/roster`; exports `ApiCreator` type.
+- **RosterTable**: updated to `ApiCreator[]` (from AddCreatorSheet), inline `ApiDeal` type (no platform).
+- **KanbanFilters**: removed platform filter chip (field does not exist on Deal in schema); inline `ApiDeal`.
+- **DealCard**: removed platform badge; inline `ApiDeal`.
+- **KanbanBoard**: exports `ApiDeal`; `handleDragEnd` calls `POST /api/v1/deals/[id]/stage` with optimistic update + rollback on failure.
+- **StageControlPanel**: `handleAdvance` → `POST /api/v1/deals/[id]/stage`; `handleReopen` → `POST /api/v1/deals/[id]/reopen`; calls `onDealChange(json.data)` on success.
+- **SubmissionHistory**: exports `ApiSubmission` type; removed MockSubmission dependency.
+- **DealDetail**: wired all 6 handlers (contract sent/signed, approve, request changes, submit content, payment received); removed platform badge; imports ApiSubmission from SubmissionHistory.
+- **BriefDetail**: wired `handleMarkReviewed` and `handleDecline` to `PATCH /api/v1/briefs/[id]`; replaced `brandManagerName`/`brandManagerCompany` (mock-only fields) with `brandManagerClerkId`.
+- **KanbanColumn**: updated import to use `ApiDeal` from KanbanBoard.
+- **lib/mock/creators.ts**: added `updatedAt` field to `MockCreator` type and all 5 fixtures (satisfies `ApiCreator[]` for test compatibility).
+- **Test fixtures**: removed explicit `MockDeal`/`MockSubmission` type annotations; added missing fields; removed platform badge test.
+
+### Why
+Phase 1 shipped all interactive components with mock data. This session wires every `onSubmit`/handler to the real `/api/v1/...` endpoints that already exist. No new endpoints were added — purely frontend wiring work.
+
+### Quality gates
+- `npm run typecheck`: 0 errors
+- `npm run lint`: 0 new errors (13 pre-existing warnings)
+- `npm run test`: 118/118 pass
+- `npm run build`: success (41 routes compiled)
 
 ---

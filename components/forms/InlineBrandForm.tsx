@@ -3,10 +3,10 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { MockBrand } from '@/lib/mock/brands'
 
 const InlineBrandSchema = z.object({
   name: z.string().min(1, 'Brand name is required'),
@@ -19,8 +19,17 @@ const InlineBrandSchema = z.object({
 
 type InlineBrandInput = z.infer<typeof InlineBrandSchema>
 
+export type ApiBrand = {
+  id: string
+  name: string
+  website: string | null
+  logoUrl: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 interface InlineBrandFormProps {
-  onCreated: (brand: MockBrand) => void
+  onCreated: (brand: ApiBrand) => void
   onCancel: () => void
 }
 
@@ -34,16 +43,21 @@ export function InlineBrandForm({ onCreated, onCancel }: InlineBrandFormProps) {
     defaultValues: { name: '', website: '' },
   })
 
-  function onSubmit(data: InlineBrandInput) {
-    const newBrand: MockBrand = {
-      // eslint-disable-next-line react-hooks/purity
-      id: `brand_${Date.now()}`,
-      name: data.name,
-      website: data.website || null,
-      logoUrl: null,
-      createdAt: new Date().toISOString(),
+  async function onSubmit(data: InlineBrandInput) {
+    const res = await fetch('/api/v1/brands', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        website: data.website || undefined,
+      }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to create brand')
+      return
     }
-    onCreated(newBrand)
+    onCreated(json.data)
   }
 
   return (

@@ -11,8 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { InlineBrandForm } from '@/components/forms/InlineBrandForm'
-import type { MockBrand } from '@/lib/mock/brands'
-import type { MockCreator } from '@/lib/mock/creators'
+import type { ApiBrand } from '@/components/forms/InlineBrandForm'
 
 const PLATFORMS = [
   'Instagram',
@@ -42,6 +41,12 @@ const DealFormSchema = z.object({
 
 type DealFormInput = z.infer<typeof DealFormSchema>
 
+type ApiCreatorOption = {
+  id: string
+  name: string
+  handle: string
+}
+
 function formatPayout(value: number, commission: number): string {
   if (isNaN(value) || isNaN(commission)) return '$0.00'
   const payout = value * (1 - commission / 100)
@@ -49,13 +54,13 @@ function formatPayout(value: number, commission: number): string {
 }
 
 interface DealNewFormProps {
-  brands: MockBrand[]
-  creators: MockCreator[]
+  brands: ApiBrand[]
+  creators: ApiCreatorOption[]
 }
 
 export function DealNewForm({ brands: initialBrands, creators }: DealNewFormProps) {
   const router = useRouter()
-  const [brands, setBrands] = useState<MockBrand[]>(initialBrands)
+  const [brands, setBrands] = useState<ApiBrand[]>(initialBrands)
   const [showInlineBrand, setShowInlineBrand] = useState(false)
 
   const {
@@ -99,15 +104,34 @@ export function DealNewForm({ brands: initialBrands, creators }: DealNewFormProp
     }
   }
 
-  function handleBrandCreated(brand: MockBrand) {
+  function handleBrandCreated(brand: ApiBrand) {
     setBrands((prev) => [...prev, brand])
     setValue('brandId', brand.id)
     setShowInlineBrand(false)
   }
 
-  function onSubmit(_data: DealFormInput) {
-    toast.success('Deal created!')
-    router.push('/deals')
+  async function onSubmit(data: DealFormInput) {
+    const body: Record<string, unknown> = {
+      title: data.title,
+      brandId: data.brandId,
+      dealValue: data.dealValue,
+      commissionPct: data.commissionPct,
+      deadline: data.deadline,
+    }
+    if (data.creatorId) body.creatorId = data.creatorId
+    if (data.notes) body.notes = data.notes
+
+    const res = await fetch('/api/v1/deals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to create deal')
+      return
+    }
+    router.push(`/deals/${json.data.id}`)
   }
 
   const showPayoutPreview =

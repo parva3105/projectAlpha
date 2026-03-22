@@ -10,21 +10,40 @@ import {
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { isOverdue } from '@/lib/overdue.client'
-import type { MockDeal } from '@/lib/mock/deals'
+
+type ApiDeal = {
+  id: string
+  title: string
+  agencyClerkId: string
+  brandId: string
+  creatorId: string | null
+  briefId: string | null
+  stage: string
+  dealValue: number
+  commissionPct: number
+  creatorPayout: number
+  deadline: string | null
+  contractStatus: string
+  contractUrl: string | null
+  paymentStatus: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  brand: { id: string; name: string; website: string | null }
+  creator: { id: string; name: string; handle: string; avatarUrl: string | null } | null
+}
 
 interface KanbanFiltersProps {
-  deals: MockDeal[]
-  onFilterChange: (filtered: MockDeal[]) => void
+  deals: ApiDeal[]
+  onFilterChange: (filtered: ApiDeal[]) => void
 }
 
 export function KanbanFilters({ deals, onFilterChange }: KanbanFiltersProps) {
-  const [platform, setPlatform] = useState('ALL')
   const [creatorId, setCreatorId] = useState('ALL')
   const [brandId, setBrandId] = useState('ALL')
   const [overdueOnly, setOverdueOnly] = useState(false)
 
   // Derive unique options from the deals array
-  const platforms = Array.from(new Set(deals.map((d) => d.platform))).sort()
   const creators = Array.from(
     new Map(
       deals
@@ -39,9 +58,6 @@ export function KanbanFilters({ deals, onFilterChange }: KanbanFiltersProps) {
   useEffect(() => {
     let filtered = deals
 
-    if (platform !== 'ALL') {
-      filtered = filtered.filter((d) => d.platform === platform)
-    }
     if (creatorId !== 'ALL') {
       filtered = filtered.filter((d) => d.creator?.id === creatorId)
     }
@@ -54,27 +70,10 @@ export function KanbanFilters({ deals, onFilterChange }: KanbanFiltersProps) {
 
     onFilterChange(filtered)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [platform, creatorId, brandId, overdueOnly])
+  }, [creatorId, brandId, overdueOnly])
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {/* Platform */}
-      <Select value={platform} onValueChange={(val) => setPlatform(val ?? 'ALL')}>
-        <SelectTrigger className="h-8 w-40 text-xs">
-          <SelectValue placeholder="All Platforms" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="ALL" className="text-xs">
-            All Platforms
-          </SelectItem>
-          {platforms.map((p) => (
-            <SelectItem key={p} value={p} className="text-xs">
-              {p}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
       {/* Creator */}
       <Select value={creatorId} onValueChange={(val) => setCreatorId(val ?? 'ALL')}>
         <SelectTrigger className="h-8 w-40 text-xs">

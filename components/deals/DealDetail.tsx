@@ -10,11 +10,31 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { SubmissionHistory } from '@/components/deals/SubmissionHistory'
+import type { ApiSubmission } from '@/components/deals/SubmissionHistory'
 import { StageControlPanel } from '@/components/deals/StageControlPanel'
 import { isOverdue } from '@/lib/overdue.client'
-import { STAGE_LABELS } from '@/lib/stage-transitions.client'
-import type { MockDeal } from '@/lib/mock/deals'
-import type { MockSubmission } from '@/lib/mock/submissions'
+
+type ApiDeal = {
+  id: string
+  title: string
+  agencyClerkId: string
+  brandId: string
+  creatorId: string | null
+  briefId: string | null
+  stage: string
+  dealValue: number
+  commissionPct: number
+  creatorPayout: number
+  deadline: string | null
+  contractStatus: string
+  contractUrl: string | null
+  paymentStatus: string
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  brand: { id: string; name: string; website: string | null }
+  creator: { id: string; name: string; handle: string; avatarUrl: string | null } | null
+}
 
 function formatDollars(value: number): string {
   return `$${value.toLocaleString('en-US', {
@@ -38,13 +58,13 @@ function contractBadgeVariant(
 }
 
 interface DealDetailProps {
-  initialDeal: MockDeal
-  initialSubmissions: MockSubmission[]
+  initialDeal: ApiDeal
+  initialSubmissions: ApiSubmission[]
 }
 
 export function DealDetail({ initialDeal, initialSubmissions }: DealDetailProps) {
-  const [deal, setDeal] = useState<MockDeal>(initialDeal)
-  const [submissions, setSubmissions] = useState<MockSubmission[]>(initialSubmissions)
+  const [deal, setDeal] = useState<ApiDeal>(initialDeal)
+  const [submissions, setSubmissions] = useState<ApiSubmission[]>(initialSubmissions)
   const [feedbackText, setFeedbackText] = useState('')
   const [showFeedbackInput, setShowFeedbackInput] = useState(false)
   const [contentUrl, setContentUrl] = useState('')
@@ -53,84 +73,118 @@ export function DealDetail({ initialDeal, initialSubmissions }: DealDetailProps)
   const creatorPayout = deal.dealValue * (1 - deal.commissionPct / 100)
 
   // Section B handlers
-  function handleMarkContractSent() {
-    setDeal((prev) => ({ ...prev, contractStatus: 'SENT' }))
+  async function handleMarkContractSent() {
+    const res = await fetch(`/api/v1/deals/${deal.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contractStatus: 'SENT' }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to update contract status')
+      return
+    }
+    setDeal(json.data)
     toast.success('Contract marked as Sent.')
   }
 
-  function handleMarkContractSigned() {
-    setDeal((prev) => ({ ...prev, contractStatus: 'SIGNED' }))
+  async function handleMarkContractSigned() {
+    const res = await fetch(`/api/v1/deals/${deal.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contractStatus: 'SIGNED' }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to update contract status')
+      return
+    }
+    setDeal(json.data)
     toast.success('Contract marked as Signed.')
   }
 
   // Section C handlers
-  function handleApproveContent() {
-    // Mark latest submission as APPROVED
+  async function handleApproveContent() {
+    const lastSub = submissions[submissions.length - 1]
+    if (!lastSub) return
+
+    const res = await fetch(`/api/v1/deals/${deal.id}/submissions/${lastSub.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'APPROVED' }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to approve content')
+      return
+    }
     setSubmissions((prev) =>
-      prev.map((s, i) =>
-        i === prev.length - 1
-          ? { ...s, status: 'APPROVED', reviewedAt: new Date().toISOString() }
-          : s
-      )
+      prev.map((s) => (s.id === lastSub.id ? json.data : s))
     )
     setDeal((prev) => ({ ...prev, stage: 'LIVE' }))
     toast.success('Content approved! Deal is now Live.')
   }
 
-  function handleRequestChanges() {
+  async function handleRequestChanges() {
     if (!feedbackText.trim()) {
       toast.error('Please enter feedback before requesting changes.')
       return
     }
-    const nextRound = submissions.length + 1
-    const newSub: MockSubmission = {
-      id: `sub_${Date.now()}`,
-      dealId: deal.id,
-      creatorId: deal.creatorId ?? '',
-      round: nextRound,
-      url: null,
-      fileKey: null,
-      status: 'CHANGES_REQUESTED',
-      feedback: feedbackText.trim(),
-      submittedAt: new Date().toISOString(),
-      reviewedAt: new Date().toISOString(),
+    const lastSub = submissions[submissions.length - 1]
+    if (!lastSub) return
+
+    const res = await fetch(`/api/v1/deals/${deal.id}/submissions/${lastSub.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'CHANGES_REQUESTED', feedback: feedbackText.trim() }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to request changes')
+      return
     }
-    setSubmissions((prev) => [...prev, newSub])
-    setDeal((prev) => ({ ...prev, stage: 'IN_PRODUCTION' }))
+    setSubmissions((prev) =>
+      prev.map((s) => (s.id === lastSub.id ? json.data : s))
+    )
     setFeedbackText('')
     setShowFeedbackInput(false)
-    toast.success('Changes requested. Deal reverted to In Production.')
+    toast.success('Changes requested.')
   }
 
-  function handleSubmitContent() {
+  async function handleSubmitContent() {
     if (!contentUrl.trim()) {
       toast.error('Please enter a content URL.')
       return
     }
-    const nextRound = submissions.length + 1
-    const newSub: MockSubmission = {
-      id: `sub_${Date.now()}`,
-      dealId: deal.id,
-      creatorId: deal.creatorId ?? '',
-      round: nextRound,
-      url: contentUrl.trim(),
-      fileKey: null,
-      status: 'PENDING',
-      feedback: null,
-      submittedAt: new Date().toISOString(),
-      reviewedAt: null,
+    const res = await fetch(`/api/v1/deals/${deal.id}/submissions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: contentUrl.trim() }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to submit content')
+      return
     }
-    setSubmissions((prev) => [...prev, newSub])
-    if (deal.stage === 'IN_PRODUCTION') {
-      setDeal((prev) => ({ ...prev, stage: 'PENDING_APPROVAL' }))
-    }
+    setSubmissions((prev) => [...prev, json.data])
+    setDeal((prev) => ({ ...prev, stage: 'PENDING_APPROVAL' }))
     setContentUrl('')
     toast.success('Content submitted for approval.')
   }
 
   // Section D handler
-  function handleMarkPaymentReceived() {
-    setDeal((prev) => ({ ...prev, paymentStatus: 'RECEIVED' }))
+  async function handleMarkPaymentReceived() {
+    const res = await fetch(`/api/v1/deals/${deal.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentStatus: 'RECEIVED' }),
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      toast.error('Failed to update payment status')
+      return
+    }
+    setDeal(json.data)
     toast.success('Payment marked as Received.')
   }
 
@@ -161,10 +215,9 @@ export function DealDetail({ initialDeal, initialSubmissions }: DealDetailProps)
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Platform + Deadline */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <Badge variant="secondary">{deal.platform}</Badge>
-              {deal.deadline && (
+            {/* Deadline */}
+            {deal.deadline && (
+              <div className="flex items-center gap-3 flex-wrap">
                 <span
                   className={`text-sm font-mono tabular-nums ${
                     overdue ? 'text-destructive font-medium' : 'text-muted-foreground'
@@ -177,8 +230,8 @@ export function DealDetail({ initialDeal, initialSubmissions }: DealDetailProps)
                     year: 'numeric',
                   })}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
 
             <Separator />
 
